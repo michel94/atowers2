@@ -5,11 +5,17 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+	#include <OpenGL/glu.h>
+	#include <OpenGL/glext.h>
+#else
+	#include <GL/gl.h>
+	#include <GL/glu.h>
+	#include <GL/glext.h>
+#endif
 #include <GL/glut.h>
 #include <GL/freeglut.h>
-#include <GL/glext.h>
 
 #include "types.hpp"
 
