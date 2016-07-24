@@ -5,7 +5,7 @@
 #include "loader.hpp"
 
 
-int Loader::loadPng(char *file_name) {
+int Loader::loadPng(const char *file_name) {
     // This function was originally written by David Grayson for
     // https://github.com/DavidEGrayson/ahrs-visualizer
     int *width = new int, *height = new int;

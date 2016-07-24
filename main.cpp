@@ -109,8 +109,6 @@ int main(int argc, char **argv){
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     
     //glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_PROJECTION);
@@ -131,7 +129,6 @@ int main(int argc, char **argv){
       glTranslatef(0, 0, -0.3);
       glRotatef(y, 1, 0, 0);
       glRotatef(x, 0, 0, 1);
-      printf("%d\n", x);
       glScalef(0.1f,0.1f,0.1f);
 
       for(int i=0; i<12; i++)

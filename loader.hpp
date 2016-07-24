@@ -4,5 +4,5 @@
 
 class Loader{
 public:
-	static int loadPng(char* );
+	static int loadPng(const char* );
 };
