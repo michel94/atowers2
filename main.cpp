@@ -3,10 +3,12 @@
 #include "main.hpp"
 #include "loader.hpp"
 #include "shaders.hpp"
+#include <glm/glm.hpp>
 
 #define SCREEN_SIZE_CUT 1.2f
 
 using namespace std;
+using namespace glm;
 
 int frame = 0, window_width, window_height;
 double timebase = 0, tm = 0, last_tick;
@@ -18,7 +20,7 @@ void opengl_init(){
 	glfwWindowHint(GLFW_SAMPLES, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Atowers 2", NULL, NULL);
  	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
  	
@@ -102,18 +104,19 @@ int main(int argc, char **argv){
 
 	last_tick = glfwGetTime();
 
-  int x = 45, y = 0;
+  float x = 45, y = -45, posX=0, posY=-1;
+  vec2 dir;
 	
   do{
-    glViewport(0, 0, window_width, window_height);
+    glViewport(0, 0, window_width, window_width);
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     
-    //glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(65.0, window_width / (float) window_height, 0.01, 100.0);
+    glOrtho(-1.0, 1.0, -1.0, 1.0, -10.0, 10.0);
+    //gluPerspective(65.0, window_width / (float) window_height, 0.01, 100.0);
     if(glfwGetKey(window, GLFW_KEY_LEFT))
       x -= 1;
     if(glfwGetKey(window, GLFW_KEY_RIGHT))
@@ -122,11 +125,19 @@ int main(int argc, char **argv){
       y += 1;
     if(glfwGetKey(window, GLFW_KEY_DOWN))
       y -= 1;
+    if(glfwGetKey(window, GLFW_KEY_W))
+      posY -= 0.01;
+    if(glfwGetKey(window, GLFW_KEY_S))
+      posY += 0.01;
+    if(glfwGetKey(window, GLFW_KEY_A))
+      posX += 0.01;
+    if(glfwGetKey(window, GLFW_KEY_D))
+      posX -= 0.01;
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-      glTranslatef(0, 0, -0.3);
+      glTranslatef(posX, posY, 4);
       glRotatef(y, 1, 0, 0);
       glRotatef(x, 0, 0, 1);
       glScalef(0.1f,0.1f,0.1f);
