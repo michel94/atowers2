@@ -1,7 +1,11 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <GL/gl.h>
+#ifdef __APPLE__
+	#include <OpenGL/gl.h>
+#else
+	#include <GL/gl.h>
+#endif
 
 typedef struct {
 	GLfloat x, y, z;
