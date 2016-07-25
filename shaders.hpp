@@ -14,8 +14,6 @@
 	#include <GL/glu.h>
 	#include <GL/glext.h>
 #endif
-#include <GL/glut.h>
-#include <GL/freeglut.h>
 
 #include "types.hpp"
 
