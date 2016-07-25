@@ -42,7 +42,7 @@ void openglInit(){
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwSwapInterval(1);
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Atowers II", NULL, NULL);
- 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+ 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
  	
 	glfwMakeContextCurrent(window);
 	glfwSetCursorPos(window, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
@@ -85,18 +85,27 @@ void updateCamera(){
     zoom /= 1.04;
 }
 
+void mouseCallback(GLFWwindow* window, int button, int action, int mods){
+  if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    printf("right click\n");
+}
+
 int main(int argc, char **argv){
 	openglInit();	
 	
   int sideTexture = Loader::loadPng("side.png");
   int topTexture =  Loader::loadPng("top.png");
   Cube cube(topTexture, sideTexture);
-
-	last_tick = glfwGetTime();
-
   vec3 dir;
+
+  last_tick = glfwGetTime();
+  glfwSetMouseButtonCallback(window, mouseCallback);
 	
   do{
+    float now = glfwGetTime();
+    float elapsed = now - last_tick;
+    last_tick = now;
+
     glViewport(0, 0, windowWidth, windowWidth);
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -119,7 +128,7 @@ int main(int argc, char **argv){
       for(int i=0; i<12; i++)
         for(int j=0; j<8; j++){
           glPushMatrix();
-            glTranslatef(i*1.05, j*1.05, i == 11 || j == 7 || i == 0 || j == 0 ? -1 : 0.1*(i+j)-1 );
+            glTranslatef(i, j, i == 11 || j == 7 || i == 0 || j == 0 ? -1 : 0.1*(i+j)-1 );
             cube.draw();
           glPopMatrix();
         }

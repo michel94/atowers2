@@ -1,39 +1,36 @@
 #include "cube.hpp"
 
-class Drawable;
-
-void Cube::drawSquare(bool flip, int texture){
-	float b = 0.0f, t = 1.0f;
-	  if(flip)
-	    swap(b, t);
-	vector<float> texCoords = {b,b, t,b, t,t, b,t};
-	vector<float> vertices = { 0.0f, 0.0f, 0,
-							            1.0f, 0.0f, 0,
-                          1.0f, 1.0f, 0,
-                          0.0f, 1.0f, 0};
-	Drawable::drawTexturedQuads(vertices, texture, texCoords);
+void Cube::draw(){
+  
+  Clickable::drawTexturedQuads(vertices, sideTexture, texCoords);
+  Clickable::drawTexturedQuads(topVertices, topTexture, texCoords);
 }
 
-void Cube::draw(){
-	drawSquare(false, topTexture);
-  glBindTexture(GL_TEXTURE_2D, sideTexture);
-  glPushMatrix();
-    glRotatef(270, 1, 0, 0);
-    drawSquare(true, sideTexture);
-    glRotatef(270, 0, 1, 0);
-    drawSquare(true, sideTexture);
-  glPopMatrix();
-  glPushMatrix();
-    glTranslatef(1, 1, 0);
-    glRotatef(180, 0, 0, 1);
-    glRotatef(270, 1, 0, 0);
-    drawSquare(true, sideTexture);
-    glRotatef(270, 0, 1, 0);
-    drawSquare(true, sideTexture);
-  glPopMatrix();
+vector<Triangle> Cube::getTriangles(){
+  return triangles;
+}
+
+void Cube::addTriangle(vector<float> &v, int i) {
+  auto v1 = vec3(v[ i ], v[i+1 ], v[i+2 ]),
+       v2 = vec3(v[i+3], v[i+4 ], v[i+5 ]),
+       v3 = vec3(v[i+6], v[i+7 ], v[i+8 ]),
+       v4 = vec3(v[i+9], v[i+10], v[i+11]);
+  this->triangles.push_back(Triangle(v1, v2, v3));
+  this->triangles.push_back(Triangle(v1, v3, v4));
 }
 
 Cube::Cube(int topTexture, int sideTexture){
   this->topTexture = topTexture;
   this->sideTexture = sideTexture;
+
+  auto &v = vertices;
+  for(int i=0; i<(signed)v.size(); i+=12){
+    addTriangle(vertices, i);
+  }
+  auto &v2 = topVertices;
+  for(int i=0; i<(signed)v2.size(); i+=12){
+    addTriangle(v2, i);
+  }
+
+
 }
