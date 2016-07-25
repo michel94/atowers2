@@ -4,6 +4,7 @@
 #include "loader.hpp"
 #include "shaders.hpp"
 #include "cube.hpp"
+#include "clickable.hpp"
 #include <glm/glm.hpp>
 
 #define SCREEN_SIZE_CUT 1.2f
@@ -17,6 +18,8 @@ double fps;
 
 // Camera
 float angleX = 45, angleY = -45, posX=0, posY=-1, posZ = 4, zoom = 1;
+int mouseX, mouseY;
+GLuint frameBuffer = 0;
 
 void monitorResolution(int *w, int *h){
   int count;
@@ -85,14 +88,27 @@ void updateCamera(){
     zoom /= 1.04;
 }
 
+int colorId = 0;
+
 void mouseCallback(GLFWwindow* window, int button, int action, int mods){
-  if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    printf("right click\n");
+  if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
+    printf("right click %d\n", colorId);
+
+  }
+}
+
+void cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){
+  mouseX = xpos;
+  mouseY = ypos;
+}
+
+void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
+  // TODO: Use keyboard callback to remove lag
 }
 
 int main(int argc, char **argv){
-	openglInit();	
-	
+  openglInit(); 
+  
   int sideTexture = Loader::loadPng("side.png");
   int topTexture =  Loader::loadPng("top.png");
   Cube cube(topTexture, sideTexture);
@@ -100,13 +116,20 @@ int main(int argc, char **argv){
 
   last_tick = glfwGetTime();
   glfwSetMouseButtonCallback(window, mouseCallback);
+  glfwSetCursorPosCallback(window, cursorMoveCallback);
+  glfwSetKeyCallback(window, keyboardCallback);
+
+  /*glGenFramebuffers(1, &frameBuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+  glDrawBuffers(1, DrawBuffers);*/
 	
   do{
     float now = glfwGetTime();
     float elapsed = now - last_tick;
     last_tick = now;
 
-    glViewport(0, 0, windowWidth, windowWidth);
+    glViewport(0, 0, windowWidth, windowHeight);
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
@@ -114,8 +137,7 @@ int main(int argc, char **argv){
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom, 1.0*zoom, -10.0, 10.0);
-    //gluPerspective(65.0, windowWidth / (float) windowHeight, 0.01, 100.0);
+    glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -125,15 +147,44 @@ int main(int argc, char **argv){
       glRotatef(angleX, 0, 0, 1);
       glScalef(0.1f,0.1f,0.1f);
 
+      glDisable (GL_BLEND);
+      glDisable (GL_DITHER);
+      glDisable (GL_FOG);
+      glDisable (GL_LIGHTING);
+      glDisable (GL_TEXTURE_1D);
+      glDisable (GL_TEXTURE_2D);
+      glDisable (GL_TEXTURE_3D);
+      glShadeModel (GL_FLAT);
+
+      unsigned int id = 1;
       for(int i=0; i<12; i++)
         for(int j=0; j<8; j++){
           glPushMatrix();
-            glTranslatef(i, j, i == 11 || j == 7 || i == 0 || j == 0 ? -1 : 0.1*(i+j)-1 );
+            glTranslatef(i, j, 0);
+            cube.drawTriangles(id++);
+          glPopMatrix();
+        }
+      glFlush();
+      glFinish();
+
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      GLubyte data[4];
+      glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+      colorId = (data[0]-1) / 2 + (data[1]-1)/2 * 256 + (data[2]-1)/2 * 65536;
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glShadeModel(GL_SMOOTH);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+      for(int i=0; i<12; i++)
+        for(int j=0; j<8; j++){
+          glPushMatrix();
+            glTranslatef(i, j, 0);
             cube.draw();
           glPopMatrix();
         }
-
       glFlush();
+
     glPopMatrix();
 
 		glfwSwapBuffers(window);

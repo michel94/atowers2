@@ -1,6 +1,6 @@
 #include "clickable.hpp"
 
-class Cube : Clickable{
+class Cube : public Clickable{
 public:
 	Cube(int, int);
 	virtual void draw();
