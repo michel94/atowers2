@@ -11,16 +11,32 @@
 using namespace std;
 using namespace glm;
 
-int frame = 0, window_width, window_height;
+int frame = 0, windowWidth, windowHeight;
 double timebase = 0, tm = 0, last_tick;
 double fps;
 
 // Camera
 float angleX = 45, angleY = -45, posX=0, posY=-1, posZ = 4, zoom = 1;
 
-void opengl_init(){
+void monitorResolution(int *w, int *h){
+  int count;
+  const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
+
+  int maxWidth = 0; int maxHeight = 0;
+  for(int i = 0; i < count; i++){
+    if(modes[i].width > maxWidth)
+      maxWidth = modes[i].width;
+    if(modes[i].height > maxHeight)
+      maxHeight = modes[i].height;
+  }
+
+  *w = maxWidth  / SCREEN_SIZE_CUT;
+  *h = maxHeight / SCREEN_SIZE_CUT;
+}
+
+void openglInit(){
 	glfwInit();
-	monitor_resolution(&SCREEN_WIDTH, &SCREEN_HEIGHT);
+	monitorResolution(&SCREEN_WIDTH, &SCREEN_HEIGHT);
 	glfwWindowHint(GLFW_SAMPLES, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -34,7 +50,7 @@ void opengl_init(){
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-  glfwGetWindowSize(window, &window_width, &window_height);
+  glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
 	if (glewInit() != GLEW_OK) {
 		fprintf(stdin, "Failed to initialize GLEW\n");
@@ -46,23 +62,7 @@ void opengl_init(){
   glEnable(GL_DEPTH_TEST);
 }
 
-void monitor_resolution(int *w, int *h){
-	int count;
-	const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
-
-	int maxWidth = 0; int maxHeight = 0;
-	for(int i = 0; i < count; i++){
-		if(modes[i].width > maxWidth)
-			maxWidth = modes[i].width;
-		if(modes[i].height > maxHeight)
-			maxHeight = modes[i].height;
-	}
-
-	*w = maxWidth  / SCREEN_SIZE_CUT;
-	*h = maxHeight / SCREEN_SIZE_CUT;
-}
-
-void update_camera(){
+void updateCamera(){
   if(glfwGetKey(window, GLFW_KEY_LEFT))
     angleX -= 1;
   if(glfwGetKey(window, GLFW_KEY_RIGHT))
@@ -86,7 +86,7 @@ void update_camera(){
 }
 
 int main(int argc, char **argv){
-	opengl_init();	
+	openglInit();	
 	
   int sideTexture = Loader::loadPng("side.png");
   int topTexture =  Loader::loadPng("top.png");
@@ -97,16 +97,16 @@ int main(int argc, char **argv){
   vec3 dir;
 	
   do{
-    glViewport(0, 0, window_width, window_width);
+    glViewport(0, 0, windowWidth, windowWidth);
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    update_camera();
+    updateCamera();
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom, 1.0*zoom, -10.0, 10.0);
-    //gluPerspective(65.0, window_width / (float) window_height, 0.01, 100.0);
+    //gluPerspective(65.0, windowWidth / (float) windowHeight, 0.01, 100.0);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
