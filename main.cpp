@@ -6,6 +6,7 @@
 #include "cube.hpp"
 #include "clickable.hpp"
 #include <glm/glm.hpp>
+#include "mapgenerator.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
 
@@ -123,6 +124,9 @@ int main(int argc, char **argv){
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
   GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
   glDrawBuffers(1, DrawBuffers);*/
+  double** heights;
+  MapGenerator a;
+  heights = a.generateMap(2, 20, 30);
 	
   do{
     float now = glfwGetTime();
@@ -157,10 +161,13 @@ int main(int argc, char **argv){
       glShadeModel (GL_FLAT);
 
       unsigned int id = 1;
-      for(int i=0; i<12; i++)
-        for(int j=0; j<8; j++){
+      //for(int i=0; i<12; i++)
+      //  for(int j=0; j<8; j++){
+      for(int i = 0; i < 20; i++)
+        for(int j = 0; j < 30; j++){
           glPushMatrix();
-            glTranslatef(i, j, 0);
+            //glTranslatef(i, j, 0);
+            glTranslatef(i, j, heights[i][j]);
             cube.drawTriangles(id++);
           glPopMatrix();
         }
@@ -176,10 +183,13 @@ int main(int argc, char **argv){
       glShadeModel(GL_SMOOTH);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-      for(int i=0; i<12; i++)
-        for(int j=0; j<8; j++){
+      //for(int i=0; i<12; i++)
+      //  for(int j=0; j<8; j++){
+      for(int i = 0; i < 20; i++)
+        for(int j = 0; j < 30; j++){
           glPushMatrix();
-            glTranslatef(i, j, 0);
+            //glTranslatef(i, j, 0);
+            glTranslatef(i, j, heights[i][j]);
             cube.draw();
           glPopMatrix();
         }
