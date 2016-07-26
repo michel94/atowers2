@@ -1,5 +1,4 @@
-#include <GL/glew.h>
-#include <GL/glu.h>
+#include "opengl.h"
 #include <vector>
 #include <glm/glm.hpp>
 
