@@ -2,13 +2,14 @@
 
 class Cube : public Clickable{
 public:
-	Cube(int, int);
+	Cube(int, int, vec3);
 	virtual void draw();
 	vector<Triangle> getTriangles();
 
 private:
 	int topTexture, sideTexture;
 	vector<Triangle> triangles;
+  vec3 pos;
 	vector<float> vertices = 
          { 0.0f, 1.0f, 0.0f,
            0.0f, 1.0f, 1.0f,

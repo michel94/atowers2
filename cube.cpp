@@ -1,7 +1,7 @@
 #include "cube.hpp"
 
 void Cube::draw(){
-  
+  glTranslatef(pos.x, pos.y, pos.z);
   Clickable::drawTexturedQuads(vertices, sideTexture, texCoords);
   Clickable::drawTexturedQuads(topVertices, topTexture, texCoords);
 }
@@ -19,9 +19,10 @@ void Cube::addTriangle(vector<float> &v, int i) {
   this->triangles.push_back(Triangle(v1, v3, v4));
 }
 
-Cube::Cube(int topTexture, int sideTexture){
+Cube::Cube(int topTexture, int sideTexture, vec3 pos){
   this->topTexture = topTexture;
   this->sideTexture = sideTexture;
+  this->pos = pos;
 
   auto &v = vertices;
   for(int i=0; i<(signed)v.size(); i+=12){

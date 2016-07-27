@@ -3,7 +3,7 @@
 #include "main.hpp"
 #include "loader.hpp"
 #include "shaders.hpp"
-#include "cube.hpp"
+#include "terrain.hpp"
 #include "clickable.hpp"
 #include <glm/glm.hpp>
 #include "mapgenerator.hpp"
@@ -109,10 +109,11 @@ void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int
 
 int main(int argc, char **argv){
   openglInit(); 
-  
-  int sideTexture = Loader::loadPng("side.png");
-  int topTexture =  Loader::loadPng("top.png");
-  Cube cube(topTexture, sideTexture);
+    
+  int mapHeight = 20, mapWidth = 30;
+  Cube*** terrain = new Cube**[mapHeight];
+
+  //Cube cube(topTexture, sideTexture, vec3());
   vec3 dir;
 
   last_tick = glfwGetTime();
@@ -127,11 +128,29 @@ int main(int argc, char **argv){
   double** heights;
   MapGenerator a;
   heights = a.generateMap(2, 20, 30);
-	
+  for(int i = 0; i < 20; i++){
+    terrain[i] = new Cube*[mapWidth];
+    for(int j = 0; j < 30; j++)
+      terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
+  }
+  
+  float totalTime=0;
+  int frameCount = 0;
+
   do{
     float now = glfwGetTime();
     float elapsed = now - last_tick;
     last_tick = now;
+
+    totalTime += elapsed;
+    frameCount++;
+    if(totalTime >= 1.0){
+      printf("\033[A\033[2Kfps: %d\n", frameCount);
+      totalTime -= 1.0;
+      frameCount = 0;
+    }
+      
+
 
     glViewport(0, 0, windowWidth, windowHeight);
     glColor4f(1,1,1,1);
@@ -161,14 +180,10 @@ int main(int argc, char **argv){
       glShadeModel (GL_FLAT);
 
       unsigned int id = 1;
-      //for(int i=0; i<12; i++)
-      //  for(int j=0; j<8; j++){
-      for(int i = 0; i < 20; i++)
-        for(int j = 0; j < 30; j++){
+      for(int i = 0; i < mapHeight; i++)
+        for(int j = 0; j < mapWidth; j++){
           glPushMatrix();
-            //glTranslatef(i, j, 0);
-            glTranslatef(i, j, heights[i][j]);
-            cube.drawTriangles(id++);
+            terrain[i][j]->drawTriangles(id++);
           glPopMatrix();
         }
       glFlush();
@@ -183,14 +198,10 @@ int main(int argc, char **argv){
       glShadeModel(GL_SMOOTH);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-      //for(int i=0; i<12; i++)
-      //  for(int j=0; j<8; j++){
-      for(int i = 0; i < 20; i++)
-        for(int j = 0; j < 30; j++){
+      for(int i = 0; i < mapHeight; i++)
+        for(int j = 0; j < mapWidth; j++){
           glPushMatrix();
-            //glTranslatef(i, j, 0);
-            glTranslatef(i, j, heights[i][j]);
-            cube.draw();
+            terrain[i][j]->draw();
           glPopMatrix();
         }
       glFlush();
