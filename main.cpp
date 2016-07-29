@@ -1,12 +1,12 @@
 
 #include <iostream>
 #include "main.hpp"
-#include "loader.hpp"
 #include "shaders.hpp"
 #include "terrain.hpp"
 #include "clickable.hpp"
-#include <glm/glm.hpp>
 #include "mapgenerator.hpp"
+#include <glm/glm.hpp>
+#include <string.h>
 
 #define SCREEN_SIZE_CUT 1.2f
 
@@ -21,6 +21,8 @@ double fps;
 float angleX = 45, angleY = -45, posX=0, posY=-1, posZ = 4, zoom = 1;
 int mouseX, mouseY;
 GLuint frameBuffer = 0;
+
+bool keyboard[1024];
 
 void monitorResolution(int *w, int *h){
   int count;
@@ -75,15 +77,23 @@ void updateCamera(){
     angleY -= 1;
   if(glfwGetKey(window, GLFW_KEY_DOWN) && angleY < -30)
     angleY += 1;
-  if(glfwGetKey(window, GLFW_KEY_W))
-    posY -= 0.01;
-  if(glfwGetKey(window, GLFW_KEY_S))
-    posY += 0.01;
-  if(glfwGetKey(window, GLFW_KEY_A))
-    posX += 0.01;
-  if(glfwGetKey(window, GLFW_KEY_D))
-    posX -= 0.01;
-  if(glfwGetKey(window, GLFW_KEY_P) && zoom < 2)
+  if(glfwGetKey(window, GLFW_KEY_W)){
+    posX -= 0.01 * cos(radians(-angleX+90));
+    posY -= 0.01 * sin(radians(-angleX+90));
+  }
+  if(glfwGetKey(window, GLFW_KEY_S)){
+    posX += 0.01 * cos(radians(-angleX+90));
+    posY += 0.01 * sin(radians(-angleX+90));
+  }
+  if(glfwGetKey(window, GLFW_KEY_A)){
+    posX += 0.01 * cos(radians(-angleX));
+    posY += 0.01 * sin(radians(-angleX));
+  }
+  if(glfwGetKey(window, GLFW_KEY_D)){
+    posX -= 0.01 * cos(radians(-angleX));
+    posY -= 0.01 * sin(radians(-angleX));
+  }
+  if(glfwGetKey(window, GLFW_KEY_P) && zoom < 10)
     zoom *= 1.04;
   if(glfwGetKey(window, GLFW_KEY_O) && zoom > 0.5)
     zoom /= 1.04;
@@ -105,12 +115,16 @@ void cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
   // TODO: Use keyboard callback to remove lag
+  /*if(action != 2)
+    printf("%d %d\n", key, action);*/
 }
 
 int main(int argc, char **argv){
-  openglInit(); 
+  openglInit();
+  memset(keyboard, false, sizeof(keyboard));
+  printf("%d %d\n", GLFW_PRESS, GLFW_RELEASE);
     
-  int mapHeight = 20, mapWidth = 30;
+  int mapHeight = 20, mapWidth = 20;
   Cube*** terrain = new Cube**[mapHeight];
 
   //Cube cube(topTexture, sideTexture, vec3());
@@ -127,15 +141,21 @@ int main(int argc, char **argv){
   glDrawBuffers(1, DrawBuffers);*/
   double** heights;
   MapGenerator a;
-  heights = a.generateMap(2, 20, 30);
-  for(int i = 0; i < 20; i++){
+  heights = a.generateMap(2, mapHeight, mapWidth);
+  for(int i = 0; i < mapHeight; i++){
     terrain[i] = new Cube*[mapWidth];
-    for(int j = 0; j < 30; j++)
+    for(int j = 0; j < mapWidth; j++)
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
   }
   
-  float totalTime=0;
+  float totalTime = 0.0f;
   int frameCount = 0;
+
+  GLint redBits, greenBits, blueBits;
+
+  glGetIntegerv (GL_RED_BITS, &redBits);
+  glGetIntegerv (GL_GREEN_BITS, &greenBits);
+  glGetIntegerv (GL_BLUE_BITS, &blueBits);
 
   do{
     float now = glfwGetTime();
@@ -149,8 +169,6 @@ int main(int argc, char **argv){
       totalTime -= 1.0;
       frameCount = 0;
     }
-      
-
 
     glViewport(0, 0, windowWidth, windowHeight);
     glColor4f(1,1,1,1);
@@ -161,14 +179,18 @@ int main(int argc, char **argv){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
+
+    //glCullFace(GL_FRONT);
+    //glEnable(GL_CULL_FACE);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-      glTranslatef(posX, posY, posZ);
       glRotatef(angleY, 1, 0, 0);
       glRotatef(angleX, 0, 0, 1);
+      glTranslatef(posX, posY, 0);
       glScalef(0.1f,0.1f,0.1f);
+
 
       glDisable (GL_BLEND);
       glDisable (GL_DITHER);
@@ -192,14 +214,16 @@ int main(int argc, char **argv){
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
       GLubyte data[4];
       glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-      colorId = (data[0]-1) / 2 + (data[1]-1)/2 * 256 + (data[2]-1)/2 * 65536;
+      colorId = data[0] + data[1] * 256 + data[2] * 65536;
+      
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
       glShadeModel(GL_SMOOTH);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-      for(int i = 0; i < mapHeight; i++)
-        for(int j = 0; j < mapWidth; j++){
+
+      for(int i = 0; i < mapWidth; i++)
+        for(int j = 0; j < mapHeight; j++){
           glPushMatrix();
             terrain[i][j]->draw();
           glPopMatrix();

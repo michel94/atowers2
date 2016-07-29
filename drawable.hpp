@@ -12,4 +12,6 @@ public:
 	//void renderTriangles(vector<> vertices, GLint texId, vector<> texCoords);
 	void drawTexturedQuads(vector<float> vertices, GLint texId, vector<float> texCoords);
 	//void renderColoredQuads(vector<> vertices, int color);
+protected:
+	vec3 pos = vec3(0,0,0);
 };

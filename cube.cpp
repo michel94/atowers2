@@ -1,9 +1,8 @@
 #include "cube.hpp"
 
 void Cube::draw(){
-  glTranslatef(pos.x, pos.y, pos.z);
-  Clickable::drawTexturedQuads(vertices, sideTexture, texCoords);
-  Clickable::drawTexturedQuads(topVertices, topTexture, texCoords);
+  Drawable::drawTexturedQuads(vertices, sideTexture, texCoords);
+  Drawable::drawTexturedQuads(topVertices, topTexture, texCoords);
 }
 
 vector<Triangle> Cube::getTriangles(){

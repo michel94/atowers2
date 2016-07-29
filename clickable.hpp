@@ -17,17 +17,16 @@ private:
 class Clickable : public Drawable{
 public:
 	virtual vector<Triangle> getTriangles() = 0;
-	void drawTexturedQuads(vector<float> vertices, GLint texId, vector<float> texCoords){
-		return Drawable::drawTexturedQuads(vertices, texId, texCoords);
-	}
 	void drawTriangles(unsigned int color){
     vector<Triangle> triangles = getTriangles();
-		GLubyte r =  color        % 256, g = (color >> 8 ) % 256,
-		       b = (color >> 16) % 256, a = (color >> 24) % 256;
+		GLubyte r = color & 0x000000FF, g = (color & 0x0000FF00) >> 8,
+		        b = (color & 0x00FF0000) >> 16, a = (color & 0xFF000000) >> 24;
     
       //printf("WTF %d %d %d\n", r, g, b);
-    glColor4b(r, g, b, a);
-
+    if(g == 0 && color > 300)
+      printf("WTF\n");
+    glColor4ub(r, g, b, a);
+    glTranslatef(pos.x, pos.y, pos.z);
     glBegin(GL_TRIANGLES);
     for(int i=0; i<(signed)triangles.size(); i++){
       glVertex3f(triangles[i].p1.x, triangles[i].p1.y, triangles[i].p1.z);
