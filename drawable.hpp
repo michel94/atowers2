@@ -14,4 +14,5 @@ public:
 	//void renderColoredQuads(vector<> vertices, int color);
 protected:
 	vec3 pos = vec3(0,0,0);
+	void onClick(){;}
 };
