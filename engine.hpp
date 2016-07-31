@@ -34,6 +34,18 @@ private:
   int mouseX, mouseY;
   GLuint frameBuffer = 0;
 
+  vector<Clickable*> clickableObjects;
+  vector<Drawable*> drawableObjects;
+
+  Clickable* getCurrentClickable();
+
+  void addObject(Drawable* obj){
+    printf("Added Drawable\n"); //TODO
+  }
+  void addObject(Clickable* obj){
+    addObject((Drawable*) obj);
+    printf("Added Clickable\n"); //TODO
+  }
 
   void updateCamera();
   void openglInit();

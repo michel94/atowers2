@@ -1,8 +1,9 @@
 #include "cube.hpp"
 
 void Cube::draw(){
-  Drawable::drawTexturedQuads(vertices, sideTexture, texCoords);
-  Drawable::drawTexturedQuads(topVertices, topTexture, texCoords);
+
+  Drawable::drawTexturedQuads(verticesVBO, vertices.size(), sideTexture, texCoordsVBO);
+  Drawable::drawTexturedQuads(topVerticesVBO, topVertices.size(), topTexture, texCoordsVBO);
 }
 
 vector<Triangle> Cube::getTriangles(){
@@ -32,5 +33,7 @@ Cube::Cube(int topTexture, int sideTexture, vec3 pos){
     addTriangle(v2, i);
   }
 
-
+  verticesVBO = Drawable::createVBO(vertices);
+  texCoordsVBO = Drawable::createVBO(texCoords);
+  topVerticesVBO = Drawable::createVBO(topVertices);
 }

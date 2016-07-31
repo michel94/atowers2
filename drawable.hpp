@@ -8,11 +8,9 @@ using namespace glm;
 
 class Drawable{
 public:
-	virtual void draw() = 0;
-	//void renderTriangles(vector<> vertices, GLint texId, vector<> texCoords);
-	void drawTexturedQuads(vector<float> vertices, GLint texId, vector<float> texCoords);
-	//void renderColoredQuads(vector<> vertices, int color);
+	virtual void draw(){};
+	void drawTexturedQuads(GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
+	GLuint createVBO(vector<float> data);
 protected:
 	vec3 pos = vec3(0,0,0);
-	void onClick(){;}
 };

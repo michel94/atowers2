@@ -9,6 +9,8 @@ public:
 private:
 	int topTexture, sideTexture;
 	vector<Triangle> triangles;
+  GLuint verticesVBO, topVerticesVBO, texCoordsVBO;
+
 	vector<float> vertices = 
          { 0.0f, 1.0f, 0.0f,
            0.0f, 1.0f, 1.0f,

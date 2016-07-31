@@ -7,9 +7,9 @@ Engine::Engine(int width, int height){
   openglInit();
 
   last_tick = glfwGetTime();
-  /*glfwSetMouseButtonCallback(window, mouseCallback);
+  glfwSetMouseButtonCallback(window, mouseCallback);
   glfwSetCursorPosCallback(window, cursorMoveCallback);
-  glfwSetKeyCallback(window, keyboardCallback);*/
+  glfwSetKeyCallback(window, keyboardCallback);
 
 }
 
@@ -17,16 +17,24 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
   terrain = new Cube**[mapHeight];
   this->mapWidth = mapWidth;
   this->mapHeight = mapHeight;
+  int id = 1;
+  clickableObjects.resize(mapHeight * mapWidth + 1);
   for(int i = 0; i < mapHeight; i++){
     terrain[i] = new Cube*[mapWidth];
-    for(int j = 0; j < mapWidth; j++)
+    for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
+      clickableObjects[id++] = terrain[i][j];
+      drawableObjects.push_back(terrain[i][j]);
+    }
   }
+
 }
 
 void Engine::run(){
   float totalTime = 0.0f;
   int frameCount = 0;
+  GLuint program = loadShader("vertex.glsl", "frag.glsl");
+  //vertex = glGetAttribLocation(program, "vertex");
 
   do{
     float now = glfwGetTime();
@@ -40,6 +48,7 @@ void Engine::run(){
       totalTime -= 1.0;
       frameCount = 0;
     }
+
 
     glViewport(0, 0, windowWidth, windowHeight);
     glColor4f(1,1,1,1);
@@ -72,19 +81,18 @@ void Engine::run(){
       glShadeModel (GL_FLAT);
 
       unsigned int id = 1;
-      for(int i = 0; i < mapHeight; i++)
-        for(int j = 0; j < mapWidth; j++){
-          glPushMatrix();
-            terrain[i][j]->drawTriangles(id++);
-          glPopMatrix();
-        }
+      for(int i=1; i<(signed)clickableObjects.size(); i++){
+        glPushMatrix();
+          //clickableObjects[i]->drawTriangles(i);
+        glPopMatrix();
+      }
       glFlush();
       glFinish();
 
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
       GLubyte data[4];
       glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-      int colorId = data[0] + data[1] * 256 + data[2] * 65536;
+      colorId = data[0] + data[1] * 256 + data[2] * 65536;
       
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
@@ -92,10 +100,12 @@ void Engine::run(){
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-      for(int i = 0; i < mapWidth; i++)
-        for(int j = 0; j < mapHeight; j++){
-            terrain[i][j]->draw();
-        }
+      
+      glUseProgram(program);
+
+      for(int i=0; i<(signed)drawableObjects.size(); i++){
+        drawableObjects[i]->draw();
+      }
       glFlush();
 
     glPopMatrix();
@@ -138,9 +148,9 @@ void Engine::openglInit(){
 }
 
 void Engine::cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){
-  /*Engine* self = (Engine*) glfwGetWindowUserPointer(window);
+  Engine* self = (Engine*) glfwGetWindowUserPointer(window);
   self->mouseX = xpos;
-  self->mouseY = ypos;*/
+  self->mouseY = ypos;
 }
 
 void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -154,11 +164,21 @@ int Engine::getColorId(){
 }
 
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
-  Engine* self = (Engine*) glfwGetWindowUserPointer(window);
-  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    printf("right click %d\n", self->getColorId());
+  Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
+  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
+    Clickable* object = engine->getCurrentClickable();
+    if(object != NULL)
+      object->onClick();
+  }
+
 }
 
+Clickable* Engine::getCurrentClickable(){
+  if(colorId > 0 && colorId < (signed) clickableObjects.size())
+    return clickableObjects[colorId];
+  else
+    return NULL;
+}
 
 void Engine::updateCamera(){
   if(glfwGetKey(window, GLFW_KEY_LEFT))
