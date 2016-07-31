@@ -1,5 +1,9 @@
 #include "engine.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <map>
+
+using namespace glm;
 
 Engine::Engine(int width, int height){
   SCREEN_WIDTH = width;
@@ -14,6 +18,8 @@ Engine::Engine(int width, int height){
 }
 
 void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
+  program = loadShader("vertex.glsl", "frag.glsl", uniforms, {"MVP"});
+
   terrain = new Cube**[mapHeight];
   this->mapWidth = mapWidth;
   this->mapHeight = mapHeight;
@@ -23,6 +29,7 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
     terrain[i] = new Cube*[mapWidth];
     for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
+      terrain[i][j]->MVPid = uniforms["MVP"];
       clickableObjects[id++] = terrain[i][j];
       drawableObjects.push_back(terrain[i][j]);
     }
@@ -33,9 +40,7 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
 void Engine::run(){
   float totalTime = 0.0f;
   int frameCount = 0;
-  GLuint program = loadShader("vertex.glsl", "frag.glsl");
-  //vertex = glGetAttribLocation(program, "vertex");
-
+  
   do{
     float now = glfwGetTime();
     float elapsed = now - last_tick;
@@ -49,16 +54,16 @@ void Engine::run(){
       frameCount = 0;
     }
 
-
     glViewport(0, 0, windowWidth, windowHeight);
     glColor4f(1,1,1,1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     updateCamera();
 
+    mat4 MVP;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
+    MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
 
     glCullFace(GL_FRONT);
     glEnable(GL_CULL_FACE);
@@ -66,10 +71,12 @@ void Engine::run(){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-      glRotatef(angleY, 1, 0, 0);
-      glRotatef(angleX, 0, 0, 1);
-      glTranslatef(posX, posY, 0);
-      glScalef(0.1f,0.1f,0.1f);
+      MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
+      MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
+      MVP = translate(MVP, vec3(posX,posY,0));
+      MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
+      
+      glLoadMatrixf(&MVP[0][0]);
 
       glDisable (GL_BLEND);
       glDisable (GL_DITHER);
@@ -80,6 +87,7 @@ void Engine::run(){
       glDisable (GL_TEXTURE_3D);
       glShadeModel (GL_FLAT);
 
+      glUseProgram(0);
       unsigned int id = 1;
       for(int i=1; i<(signed)clickableObjects.size(); i++){
         glPushMatrix();
@@ -99,12 +107,11 @@ void Engine::run(){
       glShadeModel(GL_SMOOTH);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-      
+            
       glUseProgram(program);
 
       for(int i=0; i<(signed)drawableObjects.size(); i++){
-        drawableObjects[i]->draw();
+        drawableObjects[i]->draw(&MVP);
       }
       glFlush();
 

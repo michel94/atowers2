@@ -1,25 +1,22 @@
 #include "drawable.hpp"
 
-void Drawable::drawTexturedQuads(GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO){
-  glPushMatrix();
-    glTranslatef(pos.x, pos.y, pos.z);
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState (GL_TEXTURE_COORD_ARRAY_EXT);
-    
-    glBindTexture(GL_TEXTURE_2D, texId);
-    glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
-    glTexCoordPointer(2, GL_FLOAT, 0, 0);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-    glVertexPointer(3, GL_FLOAT, 0, 0);
-    
-    glDrawArrays(GL_QUADS, 0, nVertices);
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY_EXT); 
-    
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glPopMatrix();
+void Drawable::drawTexturedQuads(GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO){  
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState (GL_TEXTURE_COORD_ARRAY_EXT);
+  
+  glBindTexture(GL_TEXTURE_2D, texId);
+  glBindBuffer(GL_ARRAY_BUFFER, texCoordsVBO);
+  glTexCoordPointer(2, GL_FLOAT, 0, 0);
+  
+  glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
+  glVertexPointer(3, GL_FLOAT, 0, 0);
+  
+  glDrawArrays(GL_QUADS, 0, nVertices);
+  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableClientState(GL_TEXTURE_COORD_ARRAY_EXT); 
+  
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  
 }
 
 GLuint Drawable::createVBO(vector<float> data){

@@ -1,6 +1,14 @@
 
 #include "shaders.hpp"
 
+GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path, map<string, GLuint> &ids, vector<string> vars){
+	GLuint program = loadShader(vertex_file_path, fragment_file_path);
+	for(auto s = vars.begin(); s < vars.end(); s++){
+		ids[*s] = glGetUniformLocation(program, (*s).c_str());
+	}
+	return program;
+}
+
 GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path){
 	glEnable(GL_LIGHTING);
 

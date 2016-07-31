@@ -36,6 +36,8 @@ private:
 
   vector<Clickable*> clickableObjects;
   vector<Drawable*> drawableObjects;
+  map<string, GLuint> uniforms;
+  GLuint program;
 
   Clickable* getCurrentClickable();
 

@@ -5,6 +5,7 @@
 #include "loader.hpp"
 
 static map<string, GLuint> textureCache;
+
 int Loader::loadPng(const char *file_name) {
   // This function was originally written by David Grayson for
   // https://github.com/DavidEGrayson/ahrs-visualizer

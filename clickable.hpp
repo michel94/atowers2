@@ -22,9 +22,6 @@ public:
 		GLubyte r = color & 0x000000FF, g = (color & 0x0000FF00) >> 8,
 		        b = (color & 0x00FF0000) >> 16, a = (color & 0xFF000000) >> 24;
     
-      //printf("WTF %d %d %d\n", r, g, b);
-    if(g == 0 && color > 300)
-      printf("WTF\n");
     glColor4ub(r, g, b, a);
     glTranslatef(pos.x, pos.y, pos.z);
     glBegin(GL_TRIANGLES);

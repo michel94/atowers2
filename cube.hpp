@@ -3,7 +3,7 @@
 class Cube : public Clickable{
 public:
 	Cube(int, int, vec3);
-	virtual void draw();
+	virtual void draw(mat4* MVP);
 	vector<Triangle> getTriangles();
 
 private:
