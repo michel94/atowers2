@@ -60,8 +60,8 @@ void Engine::run(){
     glLoadIdentity();
     glOrtho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
 
-    //glCullFace(GL_FRONT);
-    //glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glEnable(GL_CULL_FACE);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -83,7 +83,7 @@ void Engine::run(){
       unsigned int id = 1;
       for(int i=1; i<(signed)clickableObjects.size(); i++){
         glPushMatrix();
-          //clickableObjects[i]->drawTriangles(i);
+          clickableObjects[i]->drawTriangles(i);
         glPopMatrix();
       }
       glFlush();
