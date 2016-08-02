@@ -35,7 +35,7 @@ int main(int argc, char **argv){
   monitorResolution(&SCREEN_WIDTH, &SCREEN_HEIGHT);
   Engine *engine = new Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
   
-  int mapHeight = 20, mapWidth = 20;
+  int mapHeight = 50, mapWidth = 50;
   MapGenerator a;
   engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
 

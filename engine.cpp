@@ -55,10 +55,10 @@ void Engine::run(){
     }
 
     glViewport(0, 0, windowWidth, windowHeight);
-    glColor4f(1,1,1,1);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    updateCamera();
+    updateCamera(elapsed);
 
     mat4 MVP;
     glMatrixMode(GL_PROJECTION);
@@ -75,38 +75,44 @@ void Engine::run(){
       MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
       MVP = translate(MVP, vec3(posX,posY,0));
       MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
-      /*
-      glLoadMatrixf(&MVP[0][0]);
+      
+      if(pendingClick){
+        pendingClick = false;
+        glLoadMatrixf(&MVP[0][0]);
 
-      glDisable (GL_BLEND);
-      glDisable (GL_DITHER);
-      glDisable (GL_FOG);
-      glDisable (GL_LIGHTING);
-      glDisable (GL_TEXTURE_1D);
-      glDisable (GL_TEXTURE_2D);
-      glDisable (GL_TEXTURE_3D);
-      glShadeModel (GL_FLAT);
+        glDisable (GL_BLEND);
+        glDisable (GL_DITHER);
+        glDisable (GL_FOG);
+        glDisable (GL_LIGHTING);
+        glDisable (GL_TEXTURE_1D);
+        glDisable (GL_TEXTURE_2D);
+        glDisable (GL_TEXTURE_3D);
+        glShadeModel (GL_FLAT);
 
-      glUseProgram(0);
-      unsigned int id = 1;
-      for(int i=1; i<(signed)clickableObjects.size(); i++){
-        glPushMatrix();
-          clickableObjects[i]->drawTriangles(i);
-        glPopMatrix();
+        glUseProgram(0);
+        unsigned int id = 1;
+        for(int i=1; i<(signed)clickableObjects.size(); i++){
+          glPushMatrix();
+            clickableObjects[i]->drawTriangles(i);
+          glPopMatrix();
+        }
+        glFlush();
+        glFinish();
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        GLubyte data[4];
+        glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+        colorId = data[0] + data[1] * 256 + data[2] * 65536;
+        Clickable* object = getCurrentClickable();
+        if(object != NULL)
+          object->onClick();
+        
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glShadeModel(GL_SMOOTH);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
       }
-      glFlush();
-      glFinish();
-
-      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      GLubyte data[4];
-      glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-      colorId = data[0] + data[1] * 256 + data[2] * 65536;
-      */
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glShadeModel(GL_SMOOTH);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
             
       glUseProgram(program);
 
@@ -173,9 +179,7 @@ int Engine::getColorId(){
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
   Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-    Clickable* object = engine->getCurrentClickable();
-    if(object != NULL)
-      object->onClick();
+    engine->pendingClick = true;
   }
 
 }
@@ -187,30 +191,30 @@ Clickable* Engine::getCurrentClickable(){
     return NULL;
 }
 
-void Engine::updateCamera(){
+void Engine::updateCamera(float dt){
   if(glfwGetKey(window, GLFW_KEY_LEFT))
-    angleX -= 1;
+    angleX -= 50*dt;
   if(glfwGetKey(window, GLFW_KEY_RIGHT))
-    angleX += 1;
+    angleX += 50*dt;
   if(glfwGetKey(window, GLFW_KEY_UP) && angleY > -80)
-    angleY -= 1;
+    angleY -= 50*dt;
   if(glfwGetKey(window, GLFW_KEY_DOWN) && angleY < -30)
-    angleY += 1;
+    angleY += 50*dt;
   if(glfwGetKey(window, GLFW_KEY_W)){
-    posX -= 0.01 * cos(radians(-angleX+90));
-    posY -= 0.01 * sin(radians(-angleX+90));
+    posX -= 0.5 * dt * cos(radians(-angleX+90));
+    posY -= 0.5 * dt * sin(radians(-angleX+90));
   }
   if(glfwGetKey(window, GLFW_KEY_S)){
-    posX += 0.01 * cos(radians(-angleX+90));
-    posY += 0.01 * sin(radians(-angleX+90));
+    posX += 0.5 * dt * cos(radians(-angleX+90));
+    posY += 0.5 * dt * sin(radians(-angleX+90));
   }
   if(glfwGetKey(window, GLFW_KEY_A)){
-    posX += 0.01 * cos(radians(-angleX));
-    posY += 0.01 * sin(radians(-angleX));
+    posX += 0.5 * dt * cos(radians(-angleX));
+    posY += 0.5 * dt * sin(radians(-angleX));
   }
   if(glfwGetKey(window, GLFW_KEY_D)){
-    posX -= 0.01 * cos(radians(-angleX));
-    posY -= 0.01 * sin(radians(-angleX));
+    posX -= 0.5 * dt * cos(radians(-angleX));
+    posY -= 0.5 * dt * sin(radians(-angleX));
   }
   if(glfwGetKey(window, GLFW_KEY_P) && zoom < 10)
     zoom *= 1.04;

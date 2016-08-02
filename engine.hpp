@@ -39,6 +39,8 @@ private:
   map<string, GLuint> uniforms;
   GLuint program;
 
+  bool pendingClick = false;
+
   Clickable* getCurrentClickable();
 
   void addObject(Drawable* obj){
@@ -49,7 +51,7 @@ private:
     printf("Added Clickable\n"); //TODO
   }
 
-  void updateCamera();
+  void updateCamera(float);
   void openglInit();
   static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
   static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
