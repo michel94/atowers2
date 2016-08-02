@@ -5,6 +5,7 @@
 #include "loader.hpp"
 
 static map<string, GLuint> textureCache;
+static map<string, Model*> meshes;
 
 int Loader::loadPng(const char *file_name) {
   // This function was originally written by David Grayson for
@@ -162,5 +163,43 @@ int Loader::loadPng(const char *file_name) {
   free(image_data);
   free(row_pointers);
   fclose(fp);
+  textureCache[file_name] = texture;
   return texture;
+}
+
+Model* Loader::loadModel(string name){
+  if(meshes.find(name) != meshes.end())
+    return meshes[name];
+  if(name == "cube"){
+    Model* cube = new Model({
+    0.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 1.0f,
+    1.0f, 0.0f, 1.0f,
+    0.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+
+    0.0f, 0.0f, 1.0f,
+    0.0f, 1.0f, 1.0f,
+    1.0f, 1.0f, 1.0f,
+    1.0f, 0.0f, 1.0f},
+    {
+    0,1,5,4,
+    6,7,3,2,
+    1,3,7,5,
+    4,6,2,0,
+    11,10,9,8},
+    {
+      0.0f,0.0f, 0.5f,0.0f, 0.5f,0.0f, 0.0f,0.0f,
+      0.0f,1.0f, 0.5f,1.0f, 0.5f,1.0f, 0.0f,1.0f,
+      0.5f,0.0f, 0.5f,1.0f, 1.0f,1.0f, 1.0f,0.0f}
+   );
+    meshes[name] = cube;
+
+    return cube;
+  }else{
+    return NULL;
+  }
 }

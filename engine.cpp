@@ -65,7 +65,7 @@ void Engine::run(){
     glLoadIdentity();
     MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
 
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     
     glMatrixMode(GL_MODELVIEW);
@@ -75,7 +75,7 @@ void Engine::run(){
       MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
       MVP = translate(MVP, vec3(posX,posY,0));
       MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
-      
+      /*
       glLoadMatrixf(&MVP[0][0]);
 
       glDisable (GL_BLEND);
@@ -101,7 +101,7 @@ void Engine::run(){
       GLubyte data[4];
       glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
       colorId = data[0] + data[1] * 256 + data[2] * 65536;
-      
+      */
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
       glShadeModel(GL_SMOOTH);

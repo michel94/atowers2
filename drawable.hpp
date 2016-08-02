@@ -5,12 +5,10 @@
 using namespace std;
 using namespace glm;
 
-
 class Drawable{
 public:
 	virtual void draw(mat4* MVP){};
-	void drawTexturedQuads(GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
-	GLuint createVBO(vector<float> data);
+	void drawTexturedQuads(GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	GLuint MVPid;
 	mat4 MVP;
 protected:

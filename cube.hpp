@@ -1,49 +1,21 @@
 #include "clickable.hpp"
+#include "loader.hpp"
 
 class Cube : public Clickable{
 public:
-	Cube(int, int, vec3);
+	Cube(int, vec3);
 	virtual void draw(mat4* MVP);
 	vector<Triangle> getTriangles();
 
 private:
-	int topTexture, sideTexture;
+	int texture;
 	vector<Triangle> triangles;
-  GLuint verticesVBO, topVerticesVBO, texCoordsVBO;
+  GLuint elementsVBO, verticesVBO, texCoordsVBO;
 
-	vector<float> vertices = 
-         { 0.0f, 1.0f, 0.0f,
-           0.0f, 1.0f, 1.0f,
-           0.0f, 0.0f, 1.0f,
-           0.0f, 0.0f, 0.0f,
-         1.0f, 1.0f, 0.0f,
-         1.0f, 1.0f, 1.0f,
-         0.0f, 1.0f, 1.0f,
-         0.0f, 1.0f, 0.0f,
-           1.0f, 0.0f, 0.0f,
-           1.0f, 0.0f, 1.0f,
-           1.0f, 1.0f, 1.0f,
-           1.0f, 1.0f, 0.0f,
-          0.0f, 0.0f, 0.0f,
-          0.0f, 0.0f, 1.0f,
-          1.0f, 0.0f, 1.0f,
-          1.0f, 0.0f, 0.0f
-         };
-  vector<float> texCoords = 
-          {
-            0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f,
-            0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f,
-            0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f,
-            0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f 
-          };
-  vector<float> topVertices = {
-    0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,
-  };
-  vector<float> topTexCoords = {0.0f,0.0f, 0.0f,1.0f, 1.0f,1.0f, 1.0f,0.0f};
+  vector<float> *vertices;
+  vector<GLuint> *elements;
+  vector<float> *texCoords;
 
-  void addTriangle(vector<float> &v, int i);
+  void addTriangle(vector<GLuint> &index, vector<float> &v, int i);
 };
 
