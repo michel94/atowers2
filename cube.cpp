@@ -2,10 +2,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 void Cube::draw(mat4* MVP){
-  mat4 tr = glm::translate(glm::mat4(), glm::vec3(pos.x, pos.y, pos.z));
+  mat4 tr = translate(mat4(), vec3(pos.x, pos.y, pos.z));
   mat4 localMVP = *MVP * tr;
   glUniformMatrix4fv(MVPid, 1, GL_FALSE, &localMVP[0][0]);
-  Drawable::drawTexturedQuads(elementsVBO, verticesVBO, vertices->size(), texture, texCoordsVBO);
+  Drawable::drawTexturedQuads(elementsVBO, verticesVBO, elements->size(), texture, texCoordsVBO);
 }
 
 vector<Triangle> Cube::getTriangles(){
