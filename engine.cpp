@@ -41,6 +41,8 @@ void Engine::run(){
   float totalTime = 0.0f;
   int frameCount = 0;
   
+  glCullFace(GL_BACK);
+  glEnable(GL_CULL_FACE);
   do{
     float now = glfwGetTime();
     float elapsed = now - last_tick;
@@ -59,18 +61,13 @@ void Engine::run(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     updateCamera(elapsed);
-
+    
     mat4 MVP;
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
-
-    glCullFace(GL_BACK);
-    glEnable(GL_CULL_FACE);
     
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
+    
       MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
       MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
       MVP = translate(MVP, vec3(posX,posY,0));
@@ -121,7 +118,7 @@ void Engine::run(){
       }
       glFlush();
 
-    glPopMatrix();
+    
 
     glfwSwapBuffers(window);
     glfwPollEvents();
