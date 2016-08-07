@@ -224,12 +224,10 @@ void Engine::addObject(Drawable* obj){
   vec3& pos = obj->getPosition();
   Drawable* land = terrain[(int)pos.x][(int)pos.y];
   pos += vec3(0, 0, land->getPosition().z+1);
-  printf("Added Drawable\n");
 }
 
 void Engine::addObject(Clickable* obj){
   addObject((Drawable*) obj);
   clickableObjects.push_back(obj);
-  printf("Added Clickable\n");
 }
 

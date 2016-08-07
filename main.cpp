@@ -30,13 +30,26 @@ void monitorResolution(int *w, int *h){
   *h = maxHeight / SCREEN_SIZE_CUT;
 }
 
+class Castle : public Object {
+public: 
+  Castle(vec3 pos) : Object("castle", pos){
+  };
+  ~Castle();
+  void onClick(){
+    printf("Clicked on castle!\n");
+  }
+};
+
 void loadScene(){
   int mapHeight = 50, mapWidth = 50;
   MapGenerator a;
   engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
   
-  Object* castle = new Object("castle", vec3(1.0f,3.0f,0.0f));
-  engine->addObject(castle);
+  for(int i=0; i<10; i++){
+    Object* castle = new Castle(vec3(rand()%50, rand()%50, 0.0f));
+    engine->addObject(castle);
+    
+  }
 }
 
 int main(int argc, char **argv){
