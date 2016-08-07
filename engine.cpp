@@ -34,91 +34,120 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
       drawableObjects.push_back(terrain[i][j]);
     }
   }
+  glUseProgram(0);
+
+}
+
+const int gridSize = 32;
+
+const int WIDTH = gridSize*32;
+const int HEIGHT = gridSize*16;
+
+void Engine::render2d(float elapsed){
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(0.0f, 1.0f, 0.0f, 1.0f);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glUseProgram(0);
+  // Menu rendered here
+  glColor3f(0.8f, 0.7f, 0.0f);
+  glBegin(GL_QUADS);
+    glVertex2f(0.8f, 0.0f);
+    glVertex2f(1.0f, 0.0f);
+    glVertex2f(1.0f, 1.0f);
+    glVertex2f(0.8f, 1.0f);
+  glEnd();
+}
+
+void Engine::handleClick(mat4 MVP, int windowWidth, int windowHeight){
+  if(!pendingClick)
+    return;
+  
+  pendingClick = false;
+  glLoadMatrixf(&MVP[0][0]);
+
+  glDisable (GL_BLEND);
+  glDisable (GL_DITHER);
+  glDisable (GL_FOG);
+  glDisable (GL_LIGHTING);
+  glDisable (GL_TEXTURE_1D);
+  glDisable (GL_TEXTURE_2D);
+  glDisable (GL_TEXTURE_3D);
+  glShadeModel (GL_FLAT);
+
+  glUseProgram(0);
+  unsigned int id = 1;
+  for(int i=1; i<(signed)clickableObjects.size(); i++){
+    glPushMatrix();
+      clickableObjects[i]->drawTriangles(i);
+    glPopMatrix();
+  }
+  glFlush();
+  glFinish();
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  GLubyte data[4];
+  glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+  colorId = data[0] + data[1] * 256 + data[2] * 65536;
+  Clickable* object = getCurrentClickable();
+  if(object != NULL)
+    object->onClick();
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+}
+
+void Engine::render3d(float elapsed, int windowWidth, int windowHeight){  
+  updateCamera(elapsed);
+  
+  mat4 MVP;
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
+  
+  MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
+  MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
+  MVP = translate(MVP, vec3(posX,posY,0));
+  MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
+
+  handleClick(MVP, windowWidth, windowHeight);
+
+  glUseProgram(program);
+
+  for(int i=0; i<(signed)drawableObjects.size(); i++){
+    drawableObjects[i]->draw(&MVP);
+  }
 
 }
 
 void Engine::run(){
-  float totalTime = 0.0f;
-  int frameCount = 0;
-  
-  glCullFace(GL_BACK);
-  glEnable(GL_CULL_FACE);
-  
-  do{
-    float now = glfwGetTime();
-    float elapsed = now - last_tick;
-    last_tick = now;
 
-    totalTime += elapsed;
-    frameCount++;
-    if(totalTime >= 1.0){
-      printf("\033[A\033[2Kfps: %d\n", frameCount);
-      totalTime -= 1.0;
-      frameCount = 0;
-    }
+    do{
+      float elapsed = elapsedTime();
+      showFPS(elapsed);
 
-    glViewport(0, 0, windowWidth, windowHeight);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    updateCamera(elapsed);
-    
-    mat4 MVP;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
-    
-    
-    MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
-    MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
-    MVP = translate(MVP, vec3(posX,posY,0));
-    MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
-    
-    if(pendingClick){
-      pendingClick = false;
-      glLoadMatrixf(&MVP[0][0]);
-
-      glDisable (GL_BLEND);
-      glDisable (GL_DITHER);
-      glDisable (GL_FOG);
-      glDisable (GL_LIGHTING);
-      glDisable (GL_TEXTURE_1D);
-      glDisable (GL_TEXTURE_2D);
-      glDisable (GL_TEXTURE_3D);
-      glShadeModel (GL_FLAT);
-
-      glUseProgram(0);
-      unsigned int id = 1;
-      for(int i=1; i<(signed)clickableObjects.size(); i++){
-        glPushMatrix();
-          clickableObjects[i]->drawTriangles(i);
-        glPopMatrix();
-      }
-      glFlush();
-      glFinish();
-
-      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-      GLubyte data[4];
-      glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-      colorId = data[0] + data[1] * 256 + data[2] * 65536;
-      Clickable* object = getCurrentClickable();
-      if(object != NULL)
-        object->onClick();
-      
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glShadeModel(GL_SMOOTH);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    }
-          
-    glUseProgram(program);
+      
+      glViewport(0, 0, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    for(int i=0; i<(signed)drawableObjects.size(); i++){
-      drawableObjects[i]->draw(&MVP);
-    }
-    glFlush();
+      glEnable(GL_DEPTH_TEST);
+      render3d(elapsed, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
+
+      glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+      glDisable(GL_DEPTH_TEST);
     
+      render2d(elapsed);
+    
+    glFlush();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -126,34 +155,29 @@ void Engine::run(){
   } while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
        glfwWindowShouldClose(window) == 0 );
 
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    exit(EXIT_SUCCESS);
 }
 
 void Engine::openglInit(){
-  Engine* engine = this;
+  
   glfwWindowHint(GLFW_SAMPLES, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwSwapInterval(1);
   window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Atowers II", NULL, NULL);
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  
+
   glfwMakeContextCurrent(window);
   glfwSetCursorPos(window, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
-
-  glfwGetWindowSize(window, &windowWidth, &windowHeight);
+  glfwSetWindowUserPointer(window, this);
 
   if (glewInit() != GLEW_OK) {
-    fprintf(stdin, "Failed to initialize GLEW\n");
+    printf("Failed to initialize GLEW\n");
     exit(1);
   }
-
-  glfwSetWindowUserPointer(window, engine);
-  glEnable(GL_TEXTURE_2D);
-  glShadeModel(GL_SMOOTH);
-  glEnable(GL_DEPTH_TEST);
 }
 
 void Engine::cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){
@@ -231,3 +255,20 @@ void Engine::addObject(Clickable* obj){
   clickableObjects.push_back(obj);
 }
 
+float Engine::elapsedTime(){
+  float now = glfwGetTime();
+  float elapsed = now - last_tick;
+  last_tick = now;
+
+  return elapsed;
+}
+
+void Engine::showFPS(float elapsed){
+  totalTime += elapsed;
+  frameCount++;
+  if(totalTime >= 1.0){
+    printf("\033[A\033[2Kfps: %d\n", frameCount);
+    totalTime -= 1.0;
+    frameCount = 0;
+  }
+}

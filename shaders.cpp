@@ -10,8 +10,6 @@ GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path
 }
 
 GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path){
-	glEnable(GL_LIGHTING);
-
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
