@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <png.h>
 #include "loader.hpp"
+#include "string.h"
 
 static map<string, GLuint> textureCache;
 static map<string, Model*> meshes;
@@ -170,36 +171,130 @@ int Loader::loadPng(const char *file_name) {
 Model* Loader::loadModel(string name){
   if(meshes.find(name) != meshes.end())
     return meshes[name];
-  if(name == "cube"){
-    Model* cube = new Model({
-    0.0f, 0.0f, 0.0f,
-    1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 1.0f,
-    1.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
 
-    0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 0.0f, 1.0f},
-    {
-    0,1,5,4,
-    6,7,3,2,
-    1,3,7,5,
-    4,6,2,0,
-    11,10,9,8},
-    {
+  Model* model;
+  if(name == "cube"){
+    model = new Model({
+      0.0f, 0.0f, 0.0f,
+      1.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f,
+      1.0f, 1.0f, 0.0f,
+      0.0f, 0.0f, 1.0f,
+      1.0f, 0.0f, 1.0f,
+      0.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, 1.0f,
+
+      0.0f, 0.0f, 1.0f,
+      0.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, 1.0f,
+      1.0f, 0.0f, 1.0f
+    },{
+      0,1,5,4,
+      6,7,3,2,
+      1,3,7,5,
+      4,6,2,0,
+      11,10,9,8
+    },{
       0.0f,0.0f, 0.5f,0.0f, 0.5f,0.0f, 0.0f,0.0f,
       0.0f,1.0f, 0.5f,1.0f, 0.5f,1.0f, 0.0f,1.0f,
-      0.5f,0.0f, 0.5f,1.0f, 1.0f,1.0f, 1.0f,0.0f}
+      0.5f,0.0f, 0.5f,1.0f, 1.0f,1.0f, 1.0f,0.0f
+    }
    );
-    meshes[name] = cube;
 
-    return cube;
   }else{
+    model = loadObj(name);
+  }
+  meshes[name] = model;
+
+  return model;
+}
+
+void push(vector<float>& v, vec3 el){
+  v.push_back(el.x);
+  v.push_back(el.y);
+  v.push_back(el.z);
+}
+
+void push(vector<float>& v, vec2 el){
+  v.push_back(el.x);
+  v.push_back(el.y);
+}
+
+Model* Loader::loadObj(string path){
+  vector<vec3> vertices;
+  vector<vec3> normals;
+  vector<vec2> uvs;
+  vector<Face> faces;
+
+  int l = path.find_last_of("/");
+  string name = path.substr(l+1, string::npos);
+  string texture_path = path + "/" + name + ".png";
+  string obj_path = path + "/" + name + ".obj";
+  
+  FILE *file = fopen(obj_path.c_str(), "r");
+
+  if(!file){
+    printf("OBJ file \"%s\" not found\n", obj_path.c_str());
     return NULL;
   }
+
+  int tmp=1;
+  char buffer[1000];
+  char line[256], *tmp_c;
+  while(fscanf(file, "%s", line) != EOF){
+    vec3 coord;
+    vec2 coord2;
+    Face face;
+    float s = 0.4f;
+    if(!strcmp(line, "v")){
+      tmp = fscanf(file, "%f %f %f", &coord.x, &coord.y, &coord.z);
+      coord.x *= s;
+      coord.y *= s;
+      coord.z *= s;
+      vertices.push_back(coord);
+    } else if(!strcmp(line, "vn")){
+      tmp = fscanf(file, "%f %f %f", &coord.x, &coord.y, &coord.z);
+      normals.push_back(coord);
+    } else if(!strcmp(line, "vt")){
+      tmp = fscanf(file, "%f %f", &coord2.x, &coord2.y);
+      uvs.push_back(coord2);
+    } else if(!strcmp(line, "f")){
+      tmp = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d", &face.v_index[0], &face.t_index[0], &face.n_index[0],
+      &face.v_index[1], &face.t_index[1], &face.n_index[1], &face.v_index[2], &face.t_index[2], &face.n_index[2]);
+
+      faces.push_back(face);
+    }else if(!strcmp(line, "#")){
+      fgets(buffer, 1000, file);
+    }else if(!strcmp(line, "g")){
+      fgets(buffer, 1000, file);
+    }
+  }
+
+  vector<float> out_vertices, out_normals;
+  vector<float> out_uvs;
+  vector<GLuint> out_elements;
+  out_elements.resize(faces.size()*3);
+  for(uint64_t i = 0; i < faces.size(); i++){
+    out_elements.push_back(i*3);
+    out_elements.push_back(i*3+1);
+    out_elements.push_back(i*3+2);
+
+    push(out_vertices, vertices[faces[i].v_index[0] - 1]);
+    push(out_normals, normals[faces[i].n_index[0] - 1]);
+    push(out_uvs, uvs[faces[i].t_index[0] - 1]);
+    
+    push(out_vertices, vertices[faces[i].v_index[1] - 1]);
+    push(out_normals, normals[faces[i].n_index[1] - 1]);
+    push(out_uvs, uvs[faces[i].t_index[1] - 1]);
+
+    push(out_vertices, vertices[faces[i].v_index[2] - 1]);
+    push(out_normals, normals[faces[i].n_index[2] - 1]);
+    push(out_uvs, uvs[faces[i].t_index[2] - 1]);
+  }
+
+  fclose(file);
+  
+  Model* model = new Model(out_vertices, out_elements, out_uvs);
+  model->texture = loadPng(texture_path.c_str());
+  return model;
 }

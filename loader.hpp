@@ -10,5 +10,7 @@ class Loader{
 public:
 	static int loadPng(const char* );
 	static Model* loadModel(string name);
+	static Model* loadObj(string path);
+	static Model loadGroup(string group_name);
 
 };

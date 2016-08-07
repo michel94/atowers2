@@ -3,17 +3,6 @@
 #include "drawable.hpp"
 #include <stdio.h>
 
-class Triangle{
-public:
-	Triangle(vec3 p1, vec3 p2, vec3 p3){
-		this->p1 = p1;
-		this->p2 = p2;
-		this->p3 = p3;
-	}
-	vec3 p1, p2, p3;
-private:
-};
-
 class Clickable : public Drawable{
 public:
 	virtual vector<Triangle> getTriangles() = 0;

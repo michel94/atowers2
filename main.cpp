@@ -12,6 +12,7 @@ using namespace std;
 using namespace glm;
 
 int SCREEN_WIDTH, SCREEN_HEIGHT;
+Engine *engine;
 
 void monitorResolution(int *w, int *h){
   int count;
@@ -29,15 +30,21 @@ void monitorResolution(int *w, int *h){
   *h = maxHeight / SCREEN_SIZE_CUT;
 }
 
+void loadScene(){
+  int mapHeight = 50, mapWidth = 50;
+  MapGenerator a;
+  engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
+  
+  Object* castle = new Object("castle", vec3(1.0f,3.0f,0.0f));
+  engine->addObject(castle);
+}
 
 int main(int argc, char **argv){
   glfwInit();
   monitorResolution(&SCREEN_WIDTH, &SCREEN_HEIGHT);
-  Engine *engine = new Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
+  engine = new Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
   
-  int mapHeight = 50, mapWidth = 50;
-  MapGenerator a;
-  engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
+  loadScene();
 
   engine->run();
 

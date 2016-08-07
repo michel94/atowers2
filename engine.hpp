@@ -4,6 +4,7 @@
 #include "shaders.hpp"
 #include "terrain.hpp"
 #include "clickable.hpp"
+#include "object.hpp"
 using namespace std;
 
 
@@ -14,9 +15,10 @@ public:
   void loadMap(double** matrix, int, int);
   void run();
 
-  void render();
-  
   int getColorId();
+
+  void addObject(Drawable* obj);
+  void addObject(Clickable* obj);
 private:
   GLFWwindow* window;
   int SCREEN_WIDTH, SCREEN_HEIGHT;
@@ -42,14 +44,6 @@ private:
   bool pendingClick = false;
 
   Clickable* getCurrentClickable();
-
-  void addObject(Drawable* obj){
-    printf("Added Drawable\n"); //TODO
-  }
-  void addObject(Clickable* obj){
-    addObject((Drawable*) obj);
-    printf("Added Clickable\n"); //TODO
-  }
 
   void updateCamera(float);
   void openglInit();

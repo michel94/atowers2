@@ -43,6 +43,7 @@ void Engine::run(){
   
   glCullFace(GL_BACK);
   glEnable(GL_CULL_FACE);
+  
   do{
     float now = glfwGetTime();
     float elapsed = now - last_tick;
@@ -68,56 +69,55 @@ void Engine::run(){
     MVP = ortho(-1.0*zoom, 1.0*zoom, -1.0*zoom*((float)windowHeight)/windowWidth, 1.0*zoom*((float)windowHeight)/windowWidth, -10.0, 10.0);
     
     
-      MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
-      MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
-      MVP = translate(MVP, vec3(posX,posY,0));
-      MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
-      
-      if(pendingClick){
-        pendingClick = false;
-        glLoadMatrixf(&MVP[0][0]);
+    MVP = rotate(MVP, radians(angleY), vec3(1,0,0));
+    MVP = rotate(MVP, radians(angleX), vec3(0,0,1));
+    MVP = translate(MVP, vec3(posX,posY,0));
+    MVP = scale(MVP, vec3(0.1f,0.1f,0.1f));
+    
+    if(pendingClick){
+      pendingClick = false;
+      glLoadMatrixf(&MVP[0][0]);
 
-        glDisable (GL_BLEND);
-        glDisable (GL_DITHER);
-        glDisable (GL_FOG);
-        glDisable (GL_LIGHTING);
-        glDisable (GL_TEXTURE_1D);
-        glDisable (GL_TEXTURE_2D);
-        glDisable (GL_TEXTURE_3D);
-        glShadeModel (GL_FLAT);
+      glDisable (GL_BLEND);
+      glDisable (GL_DITHER);
+      glDisable (GL_FOG);
+      glDisable (GL_LIGHTING);
+      glDisable (GL_TEXTURE_1D);
+      glDisable (GL_TEXTURE_2D);
+      glDisable (GL_TEXTURE_3D);
+      glShadeModel (GL_FLAT);
 
-        glUseProgram(0);
-        unsigned int id = 1;
-        for(int i=1; i<(signed)clickableObjects.size(); i++){
-          glPushMatrix();
-            clickableObjects[i]->drawTriangles(i);
-          glPopMatrix();
-        }
-        glFlush();
-        glFinish();
-
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        GLubyte data[4];
-        glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-        colorId = data[0] + data[1] * 256 + data[2] * 65536;
-        Clickable* object = getCurrentClickable();
-        if(object != NULL)
-          object->onClick();
-        
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glShadeModel(GL_SMOOTH);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-      }
-            
-      glUseProgram(program);
-
-      for(int i=0; i<(signed)drawableObjects.size(); i++){
-        drawableObjects[i]->draw(&MVP);
+      glUseProgram(0);
+      unsigned int id = 1;
+      for(int i=1; i<(signed)clickableObjects.size(); i++){
+        glPushMatrix();
+          clickableObjects[i]->drawTriangles(i);
+        glPopMatrix();
       }
       glFlush();
+      glFinish();
 
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      GLubyte data[4];
+      glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+      colorId = data[0] + data[1] * 256 + data[2] * 65536;
+      Clickable* object = getCurrentClickable();
+      if(object != NULL)
+        object->onClick();
+      
+      glEnable(GL_TEXTURE_2D);
+      glEnable(GL_BLEND);
+      glShadeModel(GL_SMOOTH);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+          
+    glUseProgram(program);
+
+    for(int i=0; i<(signed)drawableObjects.size(); i++){
+      drawableObjects[i]->draw(&MVP);
+    }
+    glFlush();
     
 
     glfwSwapBuffers(window);
@@ -127,7 +127,6 @@ void Engine::run(){
        glfwWindowShouldClose(window) == 0 );
 
 }
-
 
 void Engine::openglInit(){
   Engine* engine = this;
@@ -218,3 +217,19 @@ void Engine::updateCamera(float dt){
   if(glfwGetKey(window, GLFW_KEY_O) && zoom > 0.5)
     zoom /= 1.04;
 }
+
+void Engine::addObject(Drawable* obj){
+  obj->MVPid = uniforms["MVP"];
+  drawableObjects.push_back(obj);
+  vec3& pos = obj->getPosition();
+  Drawable* land = terrain[(int)pos.x][(int)pos.y];
+  pos += vec3(0, 0, land->getPosition().z+1);
+  printf("Added Drawable\n");
+}
+
+void Engine::addObject(Clickable* obj){
+  addObject((Drawable*) obj);
+  clickableObjects.push_back(obj);
+  printf("Added Clickable\n");
+}
+
