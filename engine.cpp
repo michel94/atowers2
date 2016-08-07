@@ -5,6 +5,8 @@
 
 using namespace glm;
 
+const float MAX_ZOOM = 5, MIN_ZOOM = 0.5;
+
 Engine::Engine(int width, int height){
   SCREEN_WIDTH = width;
   SCREEN_HEIGHT = height;
@@ -14,7 +16,7 @@ Engine::Engine(int width, int height){
   glfwSetMouseButtonCallback(window, mouseCallback);
   glfwSetCursorPosCallback(window, cursorMoveCallback);
   glfwSetKeyCallback(window, keyboardCallback);
-
+  glfwSetScrollCallback(window, scrollCallback);
 }
 
 void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
@@ -125,39 +127,39 @@ void Engine::render3d(float elapsed, int windowWidth, int windowHeight){
 }
 
 void Engine::run(){
+  do{
+    float elapsed = elapsedTime();
+    showFPS(elapsed);
 
-    do{
-      float elapsed = elapsedTime();
-      showFPS(elapsed);
-
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      
-      glViewport(0, 0, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
-
-      glEnable(GL_DEPTH_TEST);
-      render3d(elapsed, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
-
-      glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();
-      glDisable(GL_DEPTH_TEST);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-      render2d(elapsed);
-    
+    glViewport(0, 0, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glEnable(GL_DEPTH_TEST);
+    render3d(elapsed, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glDisable(GL_DEPTH_TEST);
+  
+    render2d(elapsed);
+  
     glFlush();
+    glFinish();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
 
-  } while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-       glfwWindowShouldClose(window) == 0 );
+} while( glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+     glfwWindowShouldClose(window) == 0 );
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    exit(EXIT_SUCCESS);
+  glfwDestroyWindow(window);
+  glfwTerminate();
+  exit(EXIT_SUCCESS);
 }
 
 void Engine::openglInit(){
@@ -192,16 +194,21 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
     printf("%d %d\n", key, action);*/
 }
 
-int Engine::getColorId(){
-  return colorId;
-}
-
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
   Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
     engine->pendingClick = true;
   }
+}
 
+void Engine::scrollCallback(GLFWwindow* window, double dx, double dy){
+  Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
+  if( (dy < 0 && engine->zoom < MAX_ZOOM) || (dy > 0 && engine->zoom > MIN_ZOOM) )
+    engine->zoom *= pow(1.04, -dy*3);
+}
+
+int Engine::getColorId(){
+  return colorId;
 }
 
 Clickable* Engine::getCurrentClickable(){
@@ -236,10 +243,7 @@ void Engine::updateCamera(float dt){
     posX -= 0.5 * dt * cos(radians(-angleX));
     posY -= 0.5 * dt * sin(radians(-angleX));
   }
-  if(glfwGetKey(window, GLFW_KEY_P) && zoom < 10)
-    zoom *= 1.04;
-  if(glfwGetKey(window, GLFW_KEY_O) && zoom > 0.5)
-    zoom /= 1.04;
+  
 }
 
 void Engine::addObject(Drawable* obj){

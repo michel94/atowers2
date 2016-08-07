@@ -45,19 +45,20 @@ private:
 
   Clickable* getCurrentClickable();
 
-  void updateCamera(float);
-  void openglInit();
   static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
   static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
   static void cursorMoveCallback(GLFWwindow* window, double xpos, double ypos);
+  static void scrollCallback(GLFWwindow* window, double dx, double dy);
 
+  void handleClick(mat4 MVP, int windowWidth, int windowHeight);
+
+  void openglInit();
   void render2d(float elapsed);
   void render3d(float elapsed, int windowWidth, int windowHeight);
+  void updateCamera(float);
 
   float elapsedTime();
   void showFPS(float elapsed);
-
-  void handleClick(mat4 MVP, int windowWidth, int windowHeight);
 
   float totalTime = 0.0f;
   int frameCount = 0;
