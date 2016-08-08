@@ -41,12 +41,12 @@ public:
 };
 
 void loadScene(){
-  int mapHeight = 50, mapWidth = 50;
+  int mapHeight = 30, mapWidth = 30;
   MapGenerator a;
   engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
   
   for(int i=0; i<10; i++){
-    Object* castle = new Castle(vec3(rand()%50, rand()%50, 0.0f));
+    Object* castle = new Castle(vec3(rand()%mapWidth, rand()%mapHeight, 0.0f));
     engine->addObject(castle);
     
   }

@@ -17,6 +17,8 @@ Engine::Engine(int width, int height){
   glfwSetCursorPosCallback(window, cursorMoveCallback);
   glfwSetKeyCallback(window, keyboardCallback);
   glfwSetScrollCallback(window, scrollCallback);
+  glfwSetWindowSizeCallback(window, resizeCallback);
+
 }
 
 void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
@@ -180,6 +182,12 @@ void Engine::openglInit(){
     printf("Failed to initialize GLEW\n");
     exit(1);
   }
+}
+
+void Engine::resizeCallback(GLFWwindow* window, int width, int height){
+  Engine* self = (Engine*) glfwGetWindowUserPointer(window);
+  self->SCREEN_WIDTH = width;
+  self->SCREEN_HEIGHT = height;
 }
 
 void Engine::cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){

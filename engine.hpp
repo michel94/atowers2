@@ -19,9 +19,10 @@ public:
 
   void addObject(Drawable* obj);
   void addObject(Clickable* obj);
+  
+  int SCREEN_WIDTH, SCREEN_HEIGHT;
 private:
   GLFWwindow* window;
-  int SCREEN_WIDTH, SCREEN_HEIGHT;
 
   Cube*** terrain;
   int mapWidth, mapHeight;
@@ -49,6 +50,7 @@ private:
   static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
   static void cursorMoveCallback(GLFWwindow* window, double xpos, double ypos);
   static void scrollCallback(GLFWwindow* window, double dx, double dy);
+  static void resizeCallback(GLFWwindow* window, int width, int height);
 
   void handleClick(mat4 MVP, int windowWidth, int windowHeight);
 
