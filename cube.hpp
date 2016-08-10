@@ -1,7 +1,7 @@
-#include "clickable.hpp"
+#include "drawable.hpp"
 #include "loader.hpp"
 
-class Cube : public Clickable{
+class Cube : public Drawable{
 public:
 	Cube(int, vec3);
 	virtual void draw(mat4* MVP);

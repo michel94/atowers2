@@ -3,8 +3,10 @@
 #include <GLFW/glfw3.h>
 #include "shaders.hpp"
 #include "terrain.hpp"
-#include "clickable.hpp"
 #include "object.hpp"
+#include <vector>
+#include <set>
+
 using namespace std;
 
 
@@ -17,8 +19,9 @@ public:
 
   int getColorId();
 
-  void addObject(Drawable* obj);
-  void addObject(Clickable* obj);
+  void addObject3D(Drawable* obj);
+  void addObject2D(Drawable* obj);
+  void makeClickable(Drawable*, bool);
   
   int SCREEN_WIDTH, SCREEN_HEIGHT;
 private:
@@ -37,14 +40,14 @@ private:
   int mouseX, mouseY;
   GLuint frameBuffer = 0;
 
-  vector<Clickable*> clickableObjects;
+  vector<Drawable*> clickable2dObjects;
+  vector<Drawable*> clickable3dObjects;
+
   vector<Drawable*> drawableObjects;
+  vector<Drawable*> drawableObjects2D;
+
   map<string, GLuint> uniforms;
   GLuint program;
-
-  bool pendingClick = false;
-
-  Clickable* getCurrentClickable();
 
   static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
   static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -52,10 +55,13 @@ private:
   static void scrollCallback(GLFWwindow* window, double dx, double dy);
   static void resizeCallback(GLFWwindow* window, int width, int height);
 
+  bool pendingClick = false;
+  Drawable* getCurrentClickable();
   void handleClick(mat4 MVP, int windowWidth, int windowHeight);
+  void drawTriangles(Drawable* obj, unsigned int color);
 
   void openglInit();
-  void render2d(float elapsed);
+  void render2d(float elapsed, int windowWidth, int windowHeight);
   void render3d(float elapsed, int windowWidth, int windowHeight);
   void updateCamera(float);
 
@@ -64,5 +70,6 @@ private:
 
   float totalTime = 0.0f;
   int frameCount = 0;
+  int boardTexture;
 };
 

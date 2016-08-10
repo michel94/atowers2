@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -31,3 +32,15 @@ typedef struct {
 	GLint t_index[3];
 	GLint n_index[3];
 } Face;
+
+template<class T>
+T remove(vector<T> &v, T value){
+	auto it = find(v.begin(), v.end(), value);
+	
+	if(it == v.end())
+		return *(v.end());
+	auto element = *it;
+	*it = v.back();
+	v.pop_back();
+	return element;
+}

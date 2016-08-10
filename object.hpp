@@ -1,7 +1,7 @@
-#include "clickable.hpp"
+#include "drawable.hpp"
 #include "loader.hpp"
 
-class Object : public Clickable{
+class Object : public Drawable{
 public:
   Object(string name, vec3 pos);
   virtual void draw(mat4* MVP);

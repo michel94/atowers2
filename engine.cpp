@@ -6,6 +6,8 @@
 using namespace glm;
 
 const float MAX_ZOOM = 5, MIN_ZOOM = 0.5;
+const float BAR_PROP = 0.2;
+
 
 Engine::Engine(int width, int height){
   SCREEN_WIDTH = width;
@@ -27,41 +29,60 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
   terrain = new Cube**[mapHeight];
   this->mapWidth = mapWidth;
   this->mapHeight = mapHeight;
+  clickable3dObjects.resize(mapWidth * mapHeight + 1);
   int id = 1;
-  clickableObjects.resize(mapHeight * mapWidth + 1);
   for(int i = 0; i < mapHeight; i++){
     terrain[i] = new Cube*[mapWidth];
     for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
       terrain[i][j]->MVPid = uniforms["MVP"];
-      clickableObjects[id++] = terrain[i][j];
+      clickable3dObjects[id++] = terrain[i][j];
       drawableObjects.push_back(terrain[i][j]);
     }
   }
   glUseProgram(0);
+  boardTexture = Loader::loadPng("menu/board.png");
 
 }
 
-const int gridSize = 32;
-
-const int WIDTH = gridSize*32;
-const int HEIGHT = gridSize*16;
-
-void Engine::render2d(float elapsed){
+void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(0.0f, 1.0f, 0.0f, 1.0f);
+  gluOrtho2D(0.0f, windowWidth, 0.0f, windowHeight);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   glUseProgram(0);
   // Menu rendered here
-  glColor3f(0.8f, 0.7f, 0.0f);
+  glEnable (GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, boardTexture);
+  glColor3f(1.0f, 1.0f, 1.0f);
+  int leftX = (1-BAR_PROP) * windowWidth;
   glBegin(GL_QUADS);
-    glVertex2f(0.8f, 0.0f);
-    glVertex2f(1.0f, 0.0f);
-    glVertex2f(1.0f, 1.0f);
-    glVertex2f(0.8f, 1.0f);
+    glTexCoord2f(0.0f, 0.0f); glVertex2f(leftX, 0.0f);
+    glTexCoord2f(1.0f, 0.0f); glVertex2f(windowWidth, 0.0f);
+    glTexCoord2f(1.0f, 1.0f); glVertex2f(windowWidth, windowHeight);
+    glTexCoord2f(0.0f, 1.0f); glVertex2f(leftX, windowHeight);
+  glEnd();
+  for(int i=0; i<(signed)drawableObjects2D.size(); i++){
+    drawableObjects2D[i]->draw(NULL);
+  }
+}
+
+void Engine::drawTriangles(Drawable* obj, unsigned int color){
+  vector<Triangle> triangles = obj->getTriangles();
+  vec3& pos = obj->getPosition();
+  GLubyte r = color & 0x000000FF, g = (color & 0x0000FF00) >> 8,
+          b = (color & 0x00FF0000) >> 16, a = (color & 0xFF000000) >> 24;
+  
+  glColor4ub(r, g, b, a);
+  glTranslatef(pos.x, pos.y, pos.z);
+  glBegin(GL_TRIANGLES);
+  for(int i=0; i<(signed)triangles.size(); i++){
+    glVertex3f(triangles[i].p1.x, triangles[i].p1.y, triangles[i].p1.z);
+    glVertex3f(triangles[i].p2.x, triangles[i].p2.y, triangles[i].p2.z);
+    glVertex3f(triangles[i].p3.x, triangles[i].p3.y, triangles[i].p3.z);
+  }
   glEnd();
 }
 
@@ -80,12 +101,11 @@ void Engine::handleClick(mat4 MVP, int windowWidth, int windowHeight){
   glDisable (GL_TEXTURE_2D);
   glDisable (GL_TEXTURE_3D);
   glShadeModel (GL_FLAT);
-
   glUseProgram(0);
   unsigned int id = 1;
-  for(int i=1; i<(signed)clickableObjects.size(); i++){
+  for(int i=1; i<(signed)clickable3dObjects.size(); i++){
     glPushMatrix();
-      clickableObjects[i]->drawTriangles(i);
+      drawTriangles(clickable3dObjects[i], i);
     glPopMatrix();
   }
   glFlush();
@@ -95,7 +115,7 @@ void Engine::handleClick(mat4 MVP, int windowWidth, int windowHeight){
   GLubyte data[4];
   glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
   colorId = data[0] + data[1] * 256 + data[2] * 65536;
-  Clickable* object = getCurrentClickable();
+  Drawable* object = getCurrentClickable();
   if(object != NULL)
     object->onClick();
 
@@ -135,10 +155,10 @@ void Engine::run(){
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    glViewport(0, 0, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
+    glViewport(0, 0, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
-    render3d(elapsed, 0.8*SCREEN_WIDTH, SCREEN_HEIGHT);
+    render3d(elapsed, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -147,9 +167,9 @@ void Engine::run(){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glDisable(GL_DEPTH_TEST);
-  
-    render2d(elapsed);
-  
+    
+    render2d(elapsed, SCREEN_WIDTH, SCREEN_HEIGHT);
+
     glFlush();
     glFinish();
 
@@ -166,7 +186,7 @@ void Engine::run(){
 
 void Engine::openglInit(){
   
-  glfwWindowHint(GLFW_SAMPLES, 2);
+  glfwWindowHint(GLFW_SAMPLES, 0);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwSwapInterval(1);
@@ -177,6 +197,7 @@ void Engine::openglInit(){
   glfwSetCursorPos(window, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 
   glfwSetWindowUserPointer(window, this);
+  glfwSetWindowAspectRatio(window, 16, 9);
 
   if (glewInit() != GLEW_OK) {
     printf("Failed to initialize GLEW\n");
@@ -219,9 +240,9 @@ int Engine::getColorId(){
   return colorId;
 }
 
-Clickable* Engine::getCurrentClickable(){
-  if(colorId > 0 && colorId < (signed) clickableObjects.size())
-    return clickableObjects[colorId];
+Drawable* Engine::getCurrentClickable(){
+  if(colorId > 0 && colorId < (signed) clickable3dObjects.size())
+    return clickable3dObjects[colorId];
   else
     return NULL;
 }
@@ -254,7 +275,9 @@ void Engine::updateCamera(float dt){
   
 }
 
-void Engine::addObject(Drawable* obj){
+void Engine::addObject3D(Drawable* obj){
+  obj->engineData.is2d = false;
+
   obj->MVPid = uniforms["MVP"];
   drawableObjects.push_back(obj);
   vec3& pos = obj->getPosition();
@@ -262,9 +285,31 @@ void Engine::addObject(Drawable* obj){
   pos += vec3(0, 0, land->getPosition().z+1);
 }
 
-void Engine::addObject(Clickable* obj){
-  addObject((Drawable*) obj);
-  clickableObjects.push_back(obj);
+
+void Engine::addObject2D(Drawable* obj){
+  obj->engineData.is2d = true;
+
+  drawableObjects2D.push_back(obj);
+}
+
+void Engine::makeClickable(Drawable* obj, bool clickable){
+  if(obj->isClickable() == clickable)
+    return;
+  obj->setClickable(clickable);
+
+  if(obj->engineData.is2d){
+    if(clickable){
+      clickable2dObjects.push_back(obj);
+    }else{
+      remove(clickable2dObjects, obj);
+    }
+  }else{
+    if(clickable){
+      clickable3dObjects.push_back(obj);
+    }else{
+      remove(clickable3dObjects, obj);
+    }
+  }
 }
 
 float Engine::elapsedTime(){

@@ -32,3 +32,11 @@ void Drawable::drawTexturedTriangles(GLuint elementsVBO, GLuint verticesVBO, int
 vec3& Drawable::getPosition() {
   return pos;
 }
+
+bool Drawable::isClickable(){
+  return clickable;
+}
+
+void Drawable::setClickable(bool clickable){
+  this->clickable = clickable;
+}
