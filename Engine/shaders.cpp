@@ -1,7 +1,7 @@
 
 #include "shaders.hpp"
 
-GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path, map<string, GLuint> &ids, vector<string> vars){
+GLuint loadShader(const string vertex_file_path, const string fragment_file_path, map<string, GLuint> &ids, vector<string> vars){
 	GLuint program = loadShader(vertex_file_path, fragment_file_path);
 	for(auto s = vars.begin(); s < vars.end(); s++){
 		ids[*s] = glGetUniformLocation(program, (*s).c_str());
@@ -9,7 +9,7 @@ GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path
 	return program;
 }
 
-GLuint loadShader(const char * vertex_file_path, const char * fragment_file_path){
+GLuint loadShader(const string vertex_file_path, const string fragment_file_path){
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 

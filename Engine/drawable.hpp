@@ -1,7 +1,6 @@
 #pragma once
 
 #include "opengl.h"
-#include "utils.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -10,6 +9,16 @@ using namespace glm;
 
 struct EngineData{
 	bool is2d;
+};
+
+class Triangle{
+public:
+	Triangle(vec3 p1, vec3 p2, vec3 p3){
+		this->p1 = p1;
+		this->p2 = p2;
+		this->p3 = p3;
+	}
+	vec3 p1, p2, p3;
 };
 
 class Drawable{
@@ -32,4 +41,9 @@ public:
 protected:
 	vec3 pos = vec3(0,0,0);
 	bool clickable = false;
+};
+
+class Drawable2d : public Drawable{
+public:
+	virtual vec2 getSize() = 0;
 };

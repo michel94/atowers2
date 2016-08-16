@@ -1,9 +1,11 @@
+#pragma once
 
 #include "opengl.h"
 #include <GLFW/glfw3.h>
 #include "shaders.hpp"
 #include "terrain.hpp"
 #include "object.hpp"
+#include "gamelogic.hpp"
 #include <vector>
 #include <set>
 
@@ -20,11 +22,18 @@ public:
   int getColorId();
 
   void addObject3D(Drawable* obj);
-  void addObject2D(Drawable* obj);
+  void addObject2D(Drawable2d* obj);
   void makeClickable(Drawable*, bool);
+  void makeClickable(Drawable2d*, bool);
   
   int SCREEN_WIDTH, SCREEN_HEIGHT;
+  bool click2d;
+  GameLogic* game;
+
+  GameLogic* getGame();
+  GLFWwindow* getWindow();
 private:
+  float initialWidth, initialHeight;
   GLFWwindow* window;
 
   Cube*** terrain;
@@ -40,11 +49,11 @@ private:
   int mouseX, mouseY;
   GLuint frameBuffer = 0;
 
-  vector<Drawable*> clickable2dObjects;
   vector<Drawable*> clickable3dObjects;
+  vector<Drawable2d*> clickable2dObjects;
 
-  vector<Drawable*> drawableObjects;
-  vector<Drawable*> drawableObjects2D;
+  vector<Drawable*> drawable3dObjects;
+  vector<Drawable2d*> drawable2dObjects;
 
   map<string, GLuint> uniforms;
   GLuint program;
@@ -57,7 +66,8 @@ private:
 
   bool pendingClick = false;
   Drawable* getCurrentClickable();
-  void handleClick(mat4 MVP, int windowWidth, int windowHeight);
+  void handleClick3d(mat4 MVP, int windowWidth, int windowHeight);
+  void handleClick2d(int windowWidth, int windowHeight);
   void drawTriangles(Drawable* obj, unsigned int color);
 
   void openglInit();
@@ -71,5 +81,6 @@ private:
   float totalTime = 0.0f;
   int frameCount = 0;
   int boardTexture;
+
 };
 

@@ -4,8 +4,8 @@
 #include "mapgenerator.hpp"
 #include <glm/glm.hpp>
 #include <string.h>
-#include "engine.hpp"
-#include "quad.hpp"
+#include "Engine/engine.hpp"
+#include "Engine/quad.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
 
@@ -14,22 +14,6 @@ using namespace glm;
 
 int SCREEN_WIDTH = 1200*2, SCREEN_HEIGHT = 675*2;
 Engine *engine;
-
-void monitorResolution(int *w, int *h){
-  int count;
-  const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
-
-  int maxWidth = 0; int maxHeight = 0;
-  for(int i = 0; i < count; i++){
-    if(modes[i].width > maxWidth)
-      maxWidth = modes[i].width;
-    if(modes[i].height > maxHeight)
-      maxHeight = modes[i].height;
-  }
-
-  *w = maxWidth  / SCREEN_SIZE_CUT;
-  *h = maxHeight / SCREEN_SIZE_CUT;
-}
 
 class Castle : public Object {
 public: 
@@ -52,20 +36,17 @@ void loadScene(){
     engine->makeClickable(castle, true);
   }
 
-  Quad *farmButton = new Quad(Loader::loadPng("menu/castle.png"), vec2(1000.0, 600.0), vec2(128, 128));
+  vec2 size = vec2(128, 128);
+  Button* farmButton = new Button("castle", vec2(SCREEN_WIDTH, SCREEN_HEIGHT) - size, size);
   engine->addObject2D(farmButton);
+  engine->makeClickable(farmButton, true);
 }
 
 int main(int argc, char **argv){
-  glfwInit();
-  //monitorResolution(&SCREEN_WIDTH, &SCREEN_HEIGHT);
   engine = new Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
-  
   loadScene();
 
   engine->run();
-
-  glfwTerminate();
-
+  
 	return 0;
 }

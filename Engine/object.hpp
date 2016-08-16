@@ -1,15 +1,17 @@
+#pragma once
+
 #include "drawable.hpp"
 #include "loader.hpp"
 
-class Cube : public Drawable{
+class Object : public Drawable{
 public:
-	Cube(int, vec3);
-	virtual void draw(mat4* MVP);
-	vector<Triangle> getTriangles();
+  Object(string name, vec3 pos);
+  virtual void draw(mat4* MVP);
+  vector<Triangle> getTriangles();
 
 private:
-	int texture;
-	vector<Triangle> triangles;
+  int texture;
+  vector<Triangle> triangles;
   GLuint elementsVBO, verticesVBO, texCoordsVBO;
 
   vector<float> *vertices;

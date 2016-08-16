@@ -1,14 +1,13 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <png.h>
+#include <string.h>
 #include "loader.hpp"
-#include "string.h"
 
 static map<string, GLuint> textureCache;
 static map<string, Model*> meshes;
 
-int Loader::loadPng(const char *file_name) {
+int Loader::loadPng(string file_name) {
   // This function was originally written by David Grayson for
   // https://github.com/DavidEGrayson/ahrs-visualizer
   if(textureCache.find(file_name) != textureCache.end())
@@ -17,10 +16,10 @@ int Loader::loadPng(const char *file_name) {
   int *width = new int, *height = new int;
   png_byte header[8];
 
-  FILE *fp = fopen(file_name, "rb");
+  FILE *fp = fopen(file_name.c_str(), "rb");
   if (fp == 0)
   {
-    perror(file_name);
+    perror(file_name.c_str());
     return 0;
   }
 
@@ -29,7 +28,7 @@ int Loader::loadPng(const char *file_name) {
 
   if (png_sig_cmp(header, 0, 8))
   {
-    fprintf(stderr, "error: %s is not a PNG.\n", file_name);
+    fprintf(stderr, "error: %s is not a PNG.\n", file_name.c_str());
     fclose(fp);
     return 0;
   }
@@ -90,11 +89,9 @@ int Loader::loadPng(const char *file_name) {
   if (width){ *width = temp_width; }
   if (height){ *height = temp_height; }
 
-  //printf("%s: %lux%lu %d\n", file_name, temp_width, temp_height, color_type);
-
   if (bit_depth != 8)
   {
-    fprintf(stderr, "%s: Unsupported bit depth %d.  Must be 8.\n", file_name, bit_depth);
+    fprintf(stderr, "%s: Unsupported bit depth %d.  Must be 8.\n", file_name.c_str(), bit_depth);
     return 0;
   }
 
@@ -108,7 +105,7 @@ int Loader::loadPng(const char *file_name) {
     format = GL_RGBA;
     break;
   default:
-    fprintf(stderr, "%s: Unknown libpng color type %d.\n", file_name, color_type);
+    fprintf(stderr, "%s: Unknown libpng color type %d.\n", file_name.c_str(), color_type);
     return 0;
   }
 

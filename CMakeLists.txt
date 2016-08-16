@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 # Project Name
-PROJECT(HW_OPENGL)
+PROJECT(ATOWERS C CXX)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OpenGL_INCLUDE_DIRS})
@@ -34,6 +34,7 @@ set(CMAKE_CXX_FLAGS "-DGL_GLEXT_PROTOTYPES -Wall -std=c++11 -Wno-unused-result -
 file(GLOB src
     "*.h"
     "*.cpp"
+    "Engine/*.cpp"
 )
 
 include_directories (objects)

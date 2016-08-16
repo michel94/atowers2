@@ -1,4 +1,3 @@
-#include "opengl.h"
 #include <time.h>
 #include <stdlib.h>
 #include <map>
