@@ -5,7 +5,6 @@
 #include "shaders.hpp"
 #include "terrain.hpp"
 #include "object.hpp"
-#include "gamelogic.hpp"
 #include <vector>
 #include <set>
 
@@ -14,7 +13,7 @@ using namespace std;
 
 class Engine{
 public:
-  Engine(int width, int height);
+  Engine(GameLogic* game, int width, int height);
   ~Engine();
   void loadMap(double** matrix, int, int);
   void run();
@@ -28,7 +27,7 @@ public:
   
   int SCREEN_WIDTH, SCREEN_HEIGHT;
   bool click2d;
-  GameLogic* game;
+  GameLogic* game = NULL;
 
   GameLogic* getGame();
   GLFWwindow* getWindow();

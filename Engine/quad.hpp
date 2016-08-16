@@ -30,15 +30,3 @@ protected:
   vec2 size;
   //GLuint elementsVBO, verticesVBO, texCoordsVBO;
 };
-
-class Button : public Quad{
-public:
-  Button(string name, vec2 pos, vec2 size) : Quad(Loader::loadPng("buttons/" + name + ".png"), pos, size) {
-    this->name = name;
-  }
-  void onClick(){
-    cout << "Clicked on button " << name << endl;
-  }
-private:
-  string name;
-};

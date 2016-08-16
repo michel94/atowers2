@@ -5,6 +5,6 @@ Grass::Grass(vec3 pos) : Cube(Loader::loadPng("grass/grass.png"), pos){
   ;
 }
 
-void Grass::onClick(){
+void Grass::onClick(GameLogic* game){
   printf("Click grass on position %f, %f\n", pos.x, pos.y);
 }

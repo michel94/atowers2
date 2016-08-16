@@ -5,22 +5,34 @@
 #include <glm/glm.hpp>
 #include <string.h>
 #include "Engine/engine.hpp"
-#include "Engine/quad.hpp"
+#include "button.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
 
 using namespace std;
 using namespace glm;
 
-int SCREEN_WIDTH = 1200*2, SCREEN_HEIGHT = 675*2;
-Engine *engine;
+const int SCREEN_WIDTH = 1200*2, SCREEN_HEIGHT = 675*2;
+
+class Game : public GameLogic{
+public:
+  Engine* engine;
+  Game(){
+  }
+  void setEngine(Engine* e){
+    engine = e;
+  }
+};
+
+Engine* engine;
+Game* game;
 
 class Castle : public Object {
 public: 
   Castle(vec3 pos) : Object("castle", pos){
   };
   ~Castle();
-  void onClick(){
+  void onClick(GameLogic* game){
     printf("Clicked on castle!\n");
   }
 };
@@ -43,10 +55,13 @@ void loadScene(){
 }
 
 int main(int argc, char **argv){
-  engine = new Engine(SCREEN_WIDTH, SCREEN_HEIGHT);
+  game = new Game();
+  engine = new Engine(game, SCREEN_WIDTH, SCREEN_HEIGHT);
+  game->setEngine(engine);
   loadScene();
 
   engine->run();
   
 	return 0;
 }
+

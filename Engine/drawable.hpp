@@ -1,6 +1,7 @@
 #pragma once
 
 #include "opengl.h"
+#include "gamelogic.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -32,7 +33,7 @@ public:
 	void setClickable(bool);
 	
 	virtual vector<Triangle> getTriangles(){return vector<Triangle>();}
-	virtual void onClick(){;}
+	virtual void onClick(GameLogic*) = 0;
 
 	GLuint MVPid;
 	mat4 MVP;

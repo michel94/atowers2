@@ -9,11 +9,12 @@ const float MAX_ZOOM = 5, MIN_ZOOM = 0.5;
 const float BAR_PROP = 0.2;
 
 
-Engine::Engine(int width, int height){
+Engine::Engine(GameLogic* game, int width, int height){
   SCREEN_WIDTH = width;
   SCREEN_HEIGHT = height;
   initialWidth = width;
   initialHeight = height;
+  this->game = game;
   openglInit();
 
   last_tick = glfwGetTime();
@@ -132,7 +133,7 @@ void Engine::handleClick2d(int windowWidth, int windowHeight){
     vec2 size = obj->getSize();
     printf("%f %f %d %d\n\n", pos.x, pos.y, mouseX, mouseY);
     if(contains(pos, size, vec2(mouseX, windowHeight - mouseY))){
-      obj->onClick();
+      obj->onClick(game);
       return;
     }
   }
@@ -169,7 +170,7 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
   colorId = data[0] + data[1] * 256 + data[2] * 65536;
   Drawable* object = getCurrentClickable();
   if(object != NULL)
-    object->onClick();
+    object->onClick(game);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   

@@ -5,5 +5,5 @@
 class Grass : public Cube {
 public:
 	Grass(vec3 pos);
-	void onClick();
+	void onClick(GameLogic* game);
 };
