@@ -12,7 +12,7 @@
 using namespace std;
 using namespace glm;
 
-const int SCREEN_WIDTH = 1200*2, SCREEN_HEIGHT = 675*2;
+const int SCREEN_WIDTH = 1200, SCREEN_HEIGHT = 675;
 
 class Game : public GameLogic{
 public:
@@ -39,8 +39,7 @@ public:
 
 void loadScene(){
   int mapHeight = 30, mapWidth = 30;
-  MapGenerator a;
-  engine->loadMap(a.generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
+  engine->loadMap(MapGenerator::generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
   
   for(int i=0; i<10; i++){
     Object* castle = new Castle(vec3(rand()%mapWidth, rand()%mapHeight, 0.0f));
@@ -48,7 +47,7 @@ void loadScene(){
     engine->makeClickable(castle, true);
   }
 
-  vec2 size = vec2(128, 128);
+  vec2 size = vec2(64, 64);
   Button* farmButton = new Button("castle", vec2(SCREEN_WIDTH, SCREEN_HEIGHT) - size, size);
   engine->addObject2D(farmButton);
   engine->makeClickable(farmButton, true);

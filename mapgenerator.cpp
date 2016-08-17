@@ -1,7 +1,8 @@
 #include "mapgenerator.hpp"
 
+map<pair<int, int>, double> MapGenerator::noises;
+
 double** MapGenerator::generateMap(int amplitude, int width, int height){
-	//double noise[height][width];
 	double** noise = new double*[height];
 	for (int i = 0; i < height; i++)
     	noise[i] = new double[width];
@@ -26,10 +27,10 @@ double MapGenerator::getSmoothNoise(int x, int y){
 }
 
 double MapGenerator::getNoise(int x, int y){
-	if(noises.find(make_pair(x,y)) != noises.end())
-		return noises[make_pair(x,y)];
+	if(MapGenerator::noises.find(make_pair(x,y)) != MapGenerator::noises.end())
+		return MapGenerator::noises[make_pair(x,y)];
 	else{
-		noises[make_pair(x,y)] = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/2)) - 1;
-		return noises[make_pair(x,y)];
+		MapGenerator::noises[make_pair(x,y)] = static_cast <double> (rand()) / (static_cast <double> (RAND_MAX/2)) - 1;
+		return MapGenerator::noises[make_pair(x,y)];
 	}
 }
