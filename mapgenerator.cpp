@@ -3,6 +3,7 @@
 map<pair<int, int>, double> MapGenerator::noises;
 
 double** MapGenerator::generateMap(int amplitude, int width, int height){
+	MapGenerator::noises.clear();
 	double** noise = new double*[height];
 	for (int i = 0; i < height; i++)
     	noise[i] = new double[width];
