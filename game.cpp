@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "main.hpp"
+#include "game.hpp"
 #include "mapgenerator.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
