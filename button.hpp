@@ -5,7 +5,7 @@ public:
   Button(string name, vec2 pos, vec2 size) : Quad(Loader::loadPng("buttons/" + name + ".png"), pos, size) {
     this->name = name;
   }
-  void onClick(GameLogic* game){
+  void onClick(GameLogic* game, int button){
     cout << "Clicked on button " << name << endl;
   }
 private:

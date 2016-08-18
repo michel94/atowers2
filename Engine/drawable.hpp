@@ -33,7 +33,7 @@ public:
 	void setClickable(bool);
 	
 	virtual vector<Triangle> getTriangles(){return vector<Triangle>();}
-	virtual void onClick(GameLogic*) = 0;
+	virtual void onClick(GameLogic*, int) = 0;
 
 	GLuint MVPid;
 	mat4 MVP;

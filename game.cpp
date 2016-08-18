@@ -45,11 +45,19 @@ void Game::onOver(Drawable* obj){
   cursorPos = vec3(pos.x, pos.y, engine->getTerrainHeight((int)pos.x, (int)pos.y));
 }
 
-void Game::onClick(Drawable* obj){
+void Game::onClick(Drawable* obj, int button){
   vec3 pos = obj->getPosition();
   Object* castle = new Castle(vec3(pos.x, pos.y, 0));
   engine->addObject3D(castle);
   engine->makeClickable(castle, true);
+}
+
+void Game::onMenuOver(Drawable2d* obj){
+  
+}
+
+void Game::onMenuClick(Drawable2d* obj, int button){
+  printf("onMenuClick\n");
 }
 
 int main(int argc, char **argv){

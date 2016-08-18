@@ -16,7 +16,7 @@ public:
   Castle(vec3 pos) : Object("castle", pos){
   };
   ~Castle();
-  void onClick(GameLogic* game){
+  void onClick(GameLogic* game, int button){
     printf("Clicked on castle!\n");
   }
 };
@@ -26,10 +26,12 @@ public:
   Game();
   void loadScene();
   void onOver(Drawable* obj);
-  void onClick(Drawable* obj);
+  void onClick(Drawable* obj, int button);
+
+  void onMenuOver(Drawable2d* obj);
+  void onMenuClick(Drawable2d* obj, int button);
 private:
   Engine* engine;
-
   Castle* cursor;
 };
 

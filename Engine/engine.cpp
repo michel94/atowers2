@@ -262,10 +262,13 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
 
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
   Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
-  if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-    if(engine->getOverObject() != NULL){
-      engine->getOverObject()->onClick(engine->getGame());
-      engine->getGame()->onClick(engine->getOverObject());
+  if(action == GLFW_PRESS && engine->getOverObject() != NULL){
+    engine->getOverObject()->onClick(engine->getGame(), button);
+    if(engine->getGame()){
+      if(!engine->getOverObject()->engineData.is2d)
+        engine->getGame()->onClick(engine->getOverObject(), button);
+      else
+        engine->getGame()->onMenuClick((Drawable2d*)engine->getOverObject(), button);
     }
   }
 }
