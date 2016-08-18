@@ -45,6 +45,7 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
     for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
       terrain[i][j]->MVPid = uniforms["MVP"];
+      terrain[i][j]->getProperties()->is2d = false; 
       clickable3dObjects[id++] = terrain[i][j];
       drawable3dObjects.push_back(terrain[i][j]);
     }
@@ -128,10 +129,11 @@ void Engine::handleClick2d(int windowWidth, int windowHeight){
     return;
   pendingMove = false;
   Drawable2d* over = NULL;
+  vec2 scale = vec2(windowWidth/initialWidth, windowHeight/initialHeight);
   for(int i=0; i<(signed)clickable2dObjects.size(); i++){
     Drawable2d* obj = clickable2dObjects[i];
-    vec2 pos = vec2(obj->getPosition().x, obj->getPosition().y);
-    vec2 size = obj->getSize();
+    vec2 pos = scale * vec2(obj->getPosition().x, obj->getPosition().y);
+    vec2 size = scale * obj->getSize();
     if(contains(pos, size, vec2(mouseX, windowHeight - mouseY))){
       over = obj;
     }
@@ -166,15 +168,10 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   GLubyte data[4];
-  if(mouseX < 0 || mouseX > windowWidth || windowHeight - mouseY < 0 || windowHeight - mouseY > windowHeight){
-    printf("OUT\n");
-    colorId = 0;
-    setOverObject(getCurrentClickable());
-  }else{
-    glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-    colorId = data[0] + data[1] * 256 + data[2] * 65536;
-    setOverObject(getCurrentClickable());
-  }
+  
+  glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+  colorId = data[0] + data[1] * 256 + data[2] * 65536;
+  setOverObject(getCurrentClickable());
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
@@ -265,7 +262,7 @@ void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods)
   if(action == GLFW_PRESS && engine->getOverObject() != NULL){
     engine->getOverObject()->onClick(engine->getGame(), button);
     if(engine->getGame()){
-      if(!engine->getOverObject()->engineData.is2d)
+      if(!engine->getOverObject()->getProperties()->is2d)
         engine->getGame()->onClick(engine->getOverObject(), button);
       else
         engine->getGame()->onMenuClick((Drawable2d*)engine->getOverObject(), button);
@@ -328,8 +325,8 @@ void Engine::updateCamera(float dt){
   
 }
 
-void Engine::addObject3D(Drawable* obj){
-  obj->engineData.is2d = false;
+void Engine::addObject3d(Drawable* obj){
+  obj->getProperties()->is2d = false;
 
   obj->MVPid = uniforms["MVP"];
   drawable3dObjects.push_back(obj);
@@ -342,8 +339,8 @@ double Engine::getTerrainHeight(int x, int y){
   return terrain[x][y]->getPosition().z+1;
 }
 
-void Engine::addObject2D(Drawable2d* obj){
-  obj->engineData.is2d = true;
+void Engine::addObject2d(Drawable2d* obj){
+  obj->getProperties()->is2d = true;
 
   drawable2dObjects.push_back(obj);
 }
@@ -370,7 +367,11 @@ void Engine::makeClickable(Drawable2d* obj, bool clickable){
   }else{
     remove(clickable2dObjects, obj);
   }
-  
+}
+
+void Engine::removeObject3d(Drawable* obj){
+  remove(clickable3dObjects, obj);
+  remove(drawable3dObjects, obj);
 }
 
 float Engine::elapsedTime(){
@@ -419,8 +420,9 @@ GameLogic* Engine::getGameObject(){
 
 void Engine::setOverObject(Drawable* obj){
   overObj = obj;
-  if(game != NULL)
-    if(overObj != NULL && !overObj->engineData.is2d)
+  if(game != NULL){
+    if(overObj != NULL && !overObj->getProperties()->is2d){
       game->onOver(overObj);
+    }
+  }
 }
-

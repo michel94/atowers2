@@ -19,10 +19,13 @@ public:
 
   int getColorId();
 
-  void addObject3D(Drawable* obj);
-  void addObject2D(Drawable2d* obj);
+  void addObject3d(Drawable* obj);
+  void addObject2d(Drawable2d* obj);
   void makeClickable(Drawable*, bool);
   void makeClickable(Drawable2d*, bool);
+  void removeObject3d(Drawable* obj);
+  void removeObject2d(Drawable2d* obj);
+
   Drawable* getOverObject();
   void setOverObject(Drawable*);
   GameLogic* getGameObject();

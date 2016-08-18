@@ -40,3 +40,7 @@ bool Drawable::isClickable(){
 void Drawable::setClickable(bool clickable){
   this->clickable = clickable;
 }
+
+Properties* Drawable::getProperties(){
+  return &properties;
+}

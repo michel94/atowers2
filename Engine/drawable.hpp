@@ -8,7 +8,7 @@
 using namespace std;
 using namespace glm;
 
-struct EngineData{
+struct Properties{
 	bool is2d;
 };
 
@@ -38,10 +38,12 @@ public:
 	GLuint MVPid;
 	mat4 MVP;
 
-	EngineData engineData;
+	Properties* getProperties();
 protected:
 	vec3 pos = vec3(0,0,0);
 	bool clickable = false;
+
+	Properties properties;
 };
 
 class Drawable2d : public Drawable{

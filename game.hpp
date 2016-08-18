@@ -5,11 +5,11 @@
 #include <string.h>
 #include <glm/glm.hpp>
 #include "Engine/engine.hpp"
-#include "button.hpp"
 
 #ifdef __unix
 	#define CONSOLE_FPS 1
 #endif
+
 
 class Castle : public Object {
 public: 
@@ -30,8 +30,9 @@ public:
 
   void onMenuOver(Drawable2d* obj);
   void onMenuClick(Drawable2d* obj, int button);
+  void onButtonClick(string name);
 private:
   Engine* engine;
-  Castle* cursor;
+  Object* cursor = NULL;
 };
 
