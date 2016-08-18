@@ -2,10 +2,6 @@
 #include <iostream>
 #include "main.hpp"
 #include "mapgenerator.hpp"
-#include <glm/glm.hpp>
-#include <string.h>
-#include "Engine/engine.hpp"
-#include "button.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
 
@@ -14,30 +10,8 @@ using namespace glm;
 
 const int SCREEN_WIDTH = 1200, SCREEN_HEIGHT = 675;
 
-class Game : public GameLogic{
-public:
-  Engine* engine;
-  Game(){
-  }
-  void setEngine(Engine* e){
-    engine = e;
-  }
-};
 
-Engine* engine;
-Game* game;
-
-class Castle : public Object {
-public: 
-  Castle(vec3 pos) : Object("castle", pos){
-  };
-  ~Castle();
-  void onClick(GameLogic* game){
-    printf("Clicked on castle!\n");
-  }
-};
-
-void loadScene(){
+void Game::loadScene(){
   int mapHeight = 30, mapWidth = 30;
   engine->loadMap(MapGenerator::generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
   
@@ -51,16 +25,37 @@ void loadScene(){
   Button* farmButton = new Button("castle", vec2(SCREEN_WIDTH, SCREEN_HEIGHT) - size, size);
   engine->addObject2D(farmButton);
   engine->makeClickable(farmButton, true);
+
+  cursor = new Castle(vec3(0,0,0));
+  engine->addObject3D(cursor);
 }
 
-int main(int argc, char **argv){
-  game = new Game();
-  engine = new Engine(game, SCREEN_WIDTH, SCREEN_HEIGHT);
-  game->setEngine(engine);
+Game::Game(){
+  engine = new Engine(this, SCREEN_WIDTH, SCREEN_HEIGHT);
   loadScene();
 
   engine->run();
+}
+
+void Game::onOver(Drawable* obj){
+  vec3 pos = obj->getPosition();
+  vec3& cursorPos = cursor->getPosition();
+  cursorPos.x = pos.x;
+  cursorPos.y = pos.y;
+  cursorPos = vec3(pos.x, pos.y, engine->getTerrainHeight((int)pos.x, (int)pos.y));
+}
+
+void Game::onClick(Drawable* obj){
+  vec3 pos = obj->getPosition();
+  Object* castle = new Castle(vec3(pos.x, pos.y, 0));
+  engine->addObject3D(castle);
+  engine->makeClickable(castle, true);
+}
+
+int main(int argc, char **argv){
+  new Game();
   
 	return 0;
 }
+
 

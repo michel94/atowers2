@@ -10,7 +10,6 @@
 
 using namespace std;
 
-
 class Engine{
 public:
   Engine(GameLogic* game, int width, int height);
@@ -24,6 +23,10 @@ public:
   void addObject2D(Drawable2d* obj);
   void makeClickable(Drawable*, bool);
   void makeClickable(Drawable2d*, bool);
+  Drawable* getOverObject();
+  void setOverObject(Drawable*);
+  GameLogic* getGameObject();
+  double getTerrainHeight(int x, int y);
   
   int SCREEN_WIDTH, SCREEN_HEIGHT;
   bool click2d;
@@ -63,7 +66,7 @@ private:
   static void scrollCallback(GLFWwindow* window, double dx, double dy);
   static void resizeCallback(GLFWwindow* window, int width, int height);
 
-  bool pendingClick = false;
+  bool pendingMove = false;
   Drawable* getCurrentClickable();
   void handleClick3d(mat4 MVP, int windowWidth, int windowHeight);
   void handleClick2d(int windowWidth, int windowHeight);
@@ -81,5 +84,9 @@ private:
   int frameCount = 0;
   int boardTexture;
 
+  Drawable* overObj = NULL;
+  vector<int> cameraKeys = {GLFW_KEY_LEFT, GLFW_KEY_RIGHT, GLFW_KEY_UP, GLFW_KEY_DOWN,
+                            GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D};
+  bool checkCameraKeys();
 };
 

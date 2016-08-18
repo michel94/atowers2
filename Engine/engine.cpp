@@ -22,7 +22,7 @@ Engine::Engine(GameLogic* game, int width, int height){
   glfwSetCursorPosCallback(window, cursorMoveCallback);
   glfwSetKeyCallback(window, keyboardCallback);
   glfwSetScrollCallback(window, scrollCallback);
-  //glfwSetWindowSizeCallback(window, resizeCallback);
+  glfwSetWindowSizeCallback(window, resizeCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
 }
@@ -124,26 +124,26 @@ void Engine::render3d(float elapsed, int windowWidth, int windowHeight){
 }
 
 void Engine::handleClick2d(int windowWidth, int windowHeight){
-  if(!pendingClick || ! click2d)
+  if(!pendingMove || !click2d)
     return;
-  pendingClick = false;
+  pendingMove = false;
+  Drawable2d* over = NULL;
   for(int i=0; i<(signed)clickable2dObjects.size(); i++){
     Drawable2d* obj = clickable2dObjects[i];
     vec2 pos = vec2(obj->getPosition().x, obj->getPosition().y);
     vec2 size = obj->getSize();
-    printf("%f %f %d %d\n\n", pos.x, pos.y, mouseX, mouseY);
     if(contains(pos, size, vec2(mouseX, windowHeight - mouseY))){
-      obj->onClick(game);
-      return;
+      over = obj;
     }
   }
+  setOverObject(over);
 }
 
 void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
-  if(!pendingClick || click2d)
+  if(!pendingMove || click2d)
     return;
   
-  pendingClick = false;
+  pendingMove = false;
   glLoadMatrixf(&MVP[0][0]);
 
   glDisable (GL_BLEND);
@@ -166,12 +166,16 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   GLubyte data[4];
-  glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
-  colorId = data[0] + data[1] * 256 + data[2] * 65536;
-  Drawable* object = getCurrentClickable();
-  if(object != NULL)
-    object->onClick(game);
-
+  if(mouseX < 0 || mouseX > windowWidth || windowHeight - mouseY < 0 || windowHeight - mouseY > windowHeight){
+    printf("OUT\n");
+    colorId = 0;
+    setOverObject(getCurrentClickable());
+  }else{
+    glReadPixels(mouseX, windowHeight - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, (&data));
+    colorId = data[0] + data[1] * 256 + data[2] * 65536;
+    setOverObject(getCurrentClickable());
+  }
+  
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
 }
@@ -240,9 +244,14 @@ void Engine::resizeCallback(GLFWwindow* window, int width, int height){
 }
 
 void Engine::cursorMoveCallback(GLFWwindow* window, double xpos, double ypos){
-  Engine* self = (Engine*) glfwGetWindowUserPointer(window);
-  self->mouseX = xpos;
-  self->mouseY = ypos;
+  Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
+  if(engine->mouseX != xpos || engine->mouseY != ypos)
+    engine->pendingMove = true;
+
+  engine->mouseX = xpos;
+  engine->mouseY = ypos;
+
+  engine->click2d = engine->mouseX < (1-BAR_PROP) * engine->SCREEN_WIDTH ? false : true;
 }
 
 void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -254,8 +263,10 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
   Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
   if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-    engine->pendingClick = true;
-    engine->click2d = engine->mouseX < (1-BAR_PROP) * engine->SCREEN_WIDTH ? false : true;
+    if(engine->getOverObject() != NULL){
+      engine->getOverObject()->onClick(engine->getGame());
+      engine->getGame()->onClick(engine->getOverObject());
+    }
   }
 }
 
@@ -276,7 +287,17 @@ Drawable* Engine::getCurrentClickable(){
     return NULL;
 }
 
+bool Engine::checkCameraKeys(){
+  for(int i=0; i < (signed) cameraKeys.size(); i++)
+    if(glfwGetKey(window, cameraKeys[i]))
+      return true;
+  return false;
+}
+
 void Engine::updateCamera(float dt){
+  if(checkCameraKeys())
+    pendingMove = true;
+
   if(glfwGetKey(window, GLFW_KEY_LEFT))
     angleX -= 50*dt;
   if(glfwGetKey(window, GLFW_KEY_RIGHT))
@@ -314,6 +335,9 @@ void Engine::addObject3D(Drawable* obj){
   pos += vec3(0, 0, land->getPosition().z+1);
 }
 
+double Engine::getTerrainHeight(int x, int y){
+  return terrain[x][y]->getPosition().z+1;
+}
 
 void Engine::addObject2D(Drawable2d* obj){
   obj->engineData.is2d = true;
@@ -381,3 +405,19 @@ void Engine::removeMouseDrawable(){
   mouseCursor = NULL;
 }
 */
+
+Drawable* Engine::getOverObject(){
+  return overObj;
+}
+
+GameLogic* Engine::getGameObject(){
+  return game;
+}
+
+void Engine::setOverObject(Drawable* obj){
+  overObj = obj;
+  if(game != NULL)
+    if(overObj != NULL && !overObj->engineData.is2d)
+      game->onOver(overObj);
+}
+
