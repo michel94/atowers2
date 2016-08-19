@@ -22,10 +22,17 @@ void Game::loadScene(){
     engine->makeClickable(castle, true);
   }
 
+  vector<Button*> buttons;
+  vector<string> buildings = {"castle", "farm","castle", "farm","castle", "farm","castle", "farm"};
+
+  int gridWidth = 3;
   vec2 size = vec2(64, 64);
-  Button* farmButton = new Button("castle", vec2(SCREEN_WIDTH, SCREEN_HEIGHT) - size, size);
-  engine->addObject2d(farmButton);
-  engine->makeClickable(farmButton, true);
+  for(int i=0; i<(signed)buildings.size(); i++){
+    Button* button = new Button(buildings[i], vec2(980 + (i%gridWidth)*(size.x+8), SCREEN_HEIGHT -30 - size.y - (i/gridWidth)*(size.y+8) ), size);
+    engine->addObject2d(button);
+    engine->makeClickable(button, true);
+
+  }
 
 }
 
@@ -68,13 +75,11 @@ void Game::onMenuOver(Drawable2d* obj){
 void Game::onButtonClick(string name){
   if(cursor)
     engine->removeObject3d(cursor);
-  if(name == "castle")
-    cursor = new Castle(vec3(0, 0, 0));
-  //else if(name == "farm")
-  //  cursor = new Farm(vec3(0, 0, 0));
-  else
+  
+  cursor = new Building(name, vec3(0, 0, 0));
+  if(!cursor)
     return;
-
+  
   engine->addObject3d(cursor);
 
 }

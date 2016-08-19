@@ -10,6 +10,18 @@
 	#define CONSOLE_FPS 1
 #endif
 
+class Building : public Object {
+public:
+  Building(string name, vec3 pos) : Object(name, pos){
+    this->name = name;
+  };
+  ~Building();
+  void onClick(GameLogic* game, int button){
+    printf("Clicked on %s\n", name.c_str());
+  }
+private:
+  string name;
+};
 
 class Castle : public Object {
 public: 
