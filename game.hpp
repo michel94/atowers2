@@ -19,6 +19,9 @@ public:
   void onClick(GameLogic* game, int button){
     printf("Clicked on %s\n", name.c_str());
   }
+  string getName(){
+    return name;
+  }
 private:
   string name;
 };

@@ -23,7 +23,7 @@ void Game::loadScene(){
   }
 
   vector<Button*> buttons;
-  vector<string> buildings = {"castle", "farm","castle", "farm","castle", "farm","castle", "farm"};
+  vector<string> buildings = {"castle", "farm", "hut", "tower"};
 
   int gridWidth = 3;
   vec2 size = vec2(64, 64);
@@ -62,9 +62,9 @@ void Game::onClick(Drawable* obj, int button){
    // TODO: map strings to constructors
   if(cursor){
     vec3 pos = obj->getPosition();
-    Object* castle = new Castle(vec3(pos.x, pos.y, 0));
-    engine->addObject3d(castle);
-    engine->makeClickable(castle, true);
+    Building* building = new Building( ((Building*)cursor)->getName(), vec3(pos.x, pos.y, 0));
+    engine->addObject3d(building);
+    engine->makeClickable(building, true);
   }
 }
 

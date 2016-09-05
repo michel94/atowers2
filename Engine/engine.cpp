@@ -101,7 +101,7 @@ void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
 
 void Engine::render3d(float elapsed, int windowWidth, int windowHeight){  
   updateCamera(elapsed);
-  
+
   mat4 MVP;
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -187,6 +187,8 @@ void Engine::run(){
     glViewport(0, 0, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable (GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render3d(elapsed, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);

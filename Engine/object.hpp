@@ -6,6 +6,7 @@
 class Object : public Drawable{
 public:
   Object(string name, vec3 pos);
+  
   virtual void draw(mat4* MVP);
   vector<Triangle> getTriangles();
 
