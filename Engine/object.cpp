@@ -1,10 +1,11 @@
 #include "object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-void Object::draw(mat4* MVP){
+void Object::draw(ShaderData& shader, mat4* MVP){
   mat4 tr = translate(mat4(), pos);
   mat4 localMVP = *MVP * tr;
-  glUniformMatrix4fv(MVPid, 1, GL_FALSE, &localMVP[0][0]);
+  glUniformMatrix4fv(shader["MVP"], 1, GL_FALSE, &localMVP[0][0]);
+  glColor4f(1.0, 0.0, 0.0, 1.0);
   Drawable::drawTexturedTriangles(elementsVBO, verticesVBO, elements->size(), texture, texCoordsVBO);
 }
 
@@ -38,4 +39,8 @@ Object::Object(string name, vec3 pos){
   for(int i=0; i<(signed)elements->size(); i+=3){
     addTriangle(*elements, *vertices, i);
   }
+}
+
+vec2 Object::getSize(){
+  return size;
 }

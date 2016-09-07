@@ -2,6 +2,7 @@
 
 #include "opengl.h"
 #include "gamelogic.hpp"
+#include "shaders.hpp"
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -24,19 +25,18 @@ public:
 
 class Drawable{
 public:
-	virtual void draw(mat4* MVP){};
+	virtual void draw(ShaderData& shader, mat4* MVP) = 0;
 	void drawTexturedQuads(GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	void drawTexturedTriangles(GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	void drawTexturedPolygons(GLuint type, GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	vec3& getPosition();
 	bool isClickable();
 	void setClickable(bool);
-	
+	string getShader();
+	void setShader(string shader);
+
 	virtual vector<Triangle> getTriangles(){return vector<Triangle>();}
 	virtual void onClick(GameLogic*, int) = 0;
-
-	GLuint MVPid;
-	mat4 MVP;
 
 	Properties* getProperties();
 protected:
@@ -44,6 +44,7 @@ protected:
 	bool clickable = false;
 
 	Properties properties;
+	string SHADER = "textured";
 };
 
 class Drawable2d : public Drawable{

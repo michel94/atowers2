@@ -1,10 +1,10 @@
 #include "cube.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-void Cube::draw(mat4* MVP){
+void Cube::draw(ShaderData& shader, mat4* MVP){
   mat4 tr = translate(mat4(), vec3(pos.x, pos.y, pos.z));
   mat4 localMVP = *MVP * tr;
-  glUniformMatrix4fv(MVPid, 1, GL_FALSE, &localMVP[0][0]);
+  glUniformMatrix4fv(shader["MVP"], 1, GL_FALSE, &localMVP[0][0]);
   Drawable::drawTexturedQuads(elementsVBO, verticesVBO, elements->size(), texture, texCoordsVBO);
 }
 

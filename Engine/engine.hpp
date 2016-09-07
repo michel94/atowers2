@@ -26,6 +26,8 @@ public:
   void removeObject3d(Drawable* obj);
   void removeObject2d(Drawable2d* obj);
 
+  Drawable* at(int x, int y);
+
   Drawable* getOverObject();
   void setOverObject(Drawable*);
   GameLogic* getGameObject();
@@ -42,6 +44,7 @@ private:
   GLFWwindow* window;
 
   Cube*** terrain;
+  Drawable*** units;
   int mapWidth, mapHeight;
   int colorId = 0;
 
@@ -60,8 +63,7 @@ private:
   vector<Drawable*> drawable3dObjects;
   vector<Drawable2d*> drawable2dObjects;
 
-  map<string, GLuint> uniforms;
-  GLuint program;
+  map<string, ShaderData*> shaders;
 
   static void mouseCallback(GLFWwindow* window, int button, int action, int mods);
   static void keyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -79,6 +81,7 @@ private:
   void render2d(float elapsed, int windowWidth, int windowHeight);
   void render3d(float elapsed, int windowWidth, int windowHeight);
   void updateCamera(float);
+  void loadAvailableShaders();
 
   float elapsedTime();
   void showFPS(float elapsed);

@@ -1,15 +1,14 @@
 
 #include "shaders.hpp"
+#include <cassert>
 
-GLuint loadShader(const string vertex_file_path, const string fragment_file_path, map<string, GLuint> &ids, vector<string> vars){
-	GLuint program = loadShader(vertex_file_path, fragment_file_path);
-	for(auto s = vars.begin(); s < vars.end(); s++){
-		ids[*s] = glGetUniformLocation(program, (*s).c_str());
-	}
-	return program;
+ShaderData* loadShader(const string basePath){
+	ShaderData* shaderData = loadShader(basePath + "/vertex.glsl", basePath + "/frag.glsl");
+	assert(shaderData != NULL);
+	return shaderData;
 }
 
-GLuint loadShader(const string vertex_file_path, const string fragment_file_path){
+ShaderData* loadShader(const string vertex_file_path, const string fragment_file_path){
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -68,6 +67,32 @@ GLuint loadShader(const string vertex_file_path, const string fragment_file_path
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
+
+	map<string, GLuint> variableIds;
+	ShaderData* shaderData = new ShaderData();
+	GLint count;
+
+	GLint size; // size of the variable
+	GLenum type; // type of the variable (float, vec3 or mat4, etc)
+
+	const GLsizei bufSize = 16; // maximum name length
+	GLchar name[bufSize]; // variable name in GLSL
+	GLsizei length; // name length
+
+	glGetProgramiv(ProgramID, GL_ACTIVE_ATTRIBUTES, &count);
 	
-	return ProgramID;
+	for (int i = 0; i < count; i++){
+		glGetActiveAttrib(ProgramID, (GLuint) i, bufSize, &length, &size, &type, name);
+		shaderData->setVariable(name, glGetAttribLocation(ProgramID, name));
+	}
+
+	glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
+	
+	for (int i = 0; i < count; i++){
+		glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
+		shaderData->setVariable(name, glGetUniformLocation(ProgramID, name));
+	}
+	shaderData->programId = ProgramID;
+	
+	return shaderData;
 }

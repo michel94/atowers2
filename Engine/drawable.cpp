@@ -44,3 +44,10 @@ void Drawable::setClickable(bool clickable){
 Properties* Drawable::getProperties(){
   return &properties;
 }
+
+string Drawable::getShader(){
+  return SHADER;
+}
+void Drawable::setShader(string shader){
+  SHADER = shader;
+}

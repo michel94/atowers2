@@ -10,7 +10,7 @@ public:
     this->pos = vec3(pos.x, pos.y, 0);
     this->size = size;
   }
-  void draw(mat4* MVP){
+  void draw(ShaderData& shader, mat4* MVP){
     glEnable (GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
     glColor3f(1.0f, 1.0f, 1.0f);

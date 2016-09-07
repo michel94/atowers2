@@ -242,12 +242,8 @@ Model* Loader::loadObj(string path){
     vec3 coord;
     vec2 coord2;
     Face face;
-    float s = 0.4f;
     if(!strcmp(line, "v")){
       tmp = fscanf(file, "%f %f %f", &coord.x, &coord.y, &coord.z);
-      coord.x *= s;
-      coord.y *= s;
-      coord.z *= s;
       vertices.push_back(coord);
     } else if(!strcmp(line, "vn")){
       tmp = fscanf(file, "%f %f %f", &coord.x, &coord.y, &coord.z);

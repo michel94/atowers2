@@ -1,4 +1,5 @@
 #include "engine.hpp"
+#include "filemanager.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <map>
@@ -32,9 +33,24 @@ bool contains(vec2 orig, vec2 size, vec2 point){
       point.y >= orig.y && point.y <= orig.y + size.y;
 }
 
-void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
-  program = loadShader("vertex.glsl", "frag.glsl", uniforms, {"MVP"});
+void Engine::loadAvailableShaders() {
+  vector<string> dirs = listDirectories("shaders");
+  for(auto name = dirs.begin(); name != dirs.end(); ++name) {
+    string path = "shaders/" + *name;
+    if( exists(path + "/vertex.glsl") && exists(path + "/frag.glsl") ){
+      shaders[*name] = loadShader(path);
+      cout << "Loaded " << *name << " shader." << endl;
+    }
+  }
+  cout << endl;
 
+  shaders["none"] = new ShaderData();
+}
+
+void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
+  loadAvailableShaders();
+
+  units = new Drawable**[mapHeight];
   terrain = new Cube**[mapHeight];
   this->mapWidth = mapWidth;
   this->mapHeight = mapHeight;
@@ -42,10 +58,10 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
   int id = 1;
   for(int i = 0; i < mapHeight; i++){
     terrain[i] = new Cube*[mapWidth];
+    units[i] = new Drawable*[mapWidth]();
     for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
-      terrain[i][j]->MVPid = uniforms["MVP"];
-      terrain[i][j]->getProperties()->is2d = false; 
+      terrain[i][j]->getProperties()->is2d = false;
       clickable3dObjects[id++] = terrain[i][j];
       drawable3dObjects.push_back(terrain[i][j]);
     }
@@ -93,7 +109,10 @@ void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
   glEnd();
   glScalef(windowWidth/initialWidth, windowHeight/initialHeight, 1.0f);
   for(int i=0; i<(signed)drawable2dObjects.size(); i++){
-    drawable2dObjects[i]->draw(NULL);
+    //ShaderData& shader = *(shaders[drawable3dObjects[i]->getShader()]);
+    //glUseProgram(shader.getProgram());
+    ShaderData& shader = *(shaders["none"]);
+    drawable2dObjects[i]->draw(shader, NULL);
   }
 
   handleClick2d(windowWidth, windowHeight);
@@ -116,10 +135,11 @@ void Engine::render3d(float elapsed, int windowWidth, int windowHeight){
 
   handleClick3d(MVP, windowWidth, windowHeight);
 
-  glUseProgram(program);
 
   for(int i=0; i<(signed)drawable3dObjects.size(); i++){
-    drawable3dObjects[i]->draw(&MVP);
+    ShaderData* shader = shaders[drawable3dObjects[i]->getShader()];
+    glUseProgram(shader->getProgram());
+    drawable3dObjects[i]->draw(*shader, &MVP);
   }
 
 }
@@ -330,10 +350,13 @@ void Engine::updateCamera(float dt){
 void Engine::addObject3d(Drawable* obj){
   obj->getProperties()->is2d = false;
 
-  obj->MVPid = uniforms["MVP"];
   drawable3dObjects.push_back(obj);
   vec3& pos = obj->getPosition();
-  Drawable* land = terrain[(int)pos.x][(int)pos.y];
+  int x = (int)pos.x, y = (int)pos.y;
+  if(units[x][y] != NULL)
+    return;
+  units[x][y] = obj;
+  Drawable* land = terrain[x][y];
   pos += vec3(0, 0, land->getPosition().z+1);
 }
 
@@ -371,9 +394,22 @@ void Engine::makeClickable(Drawable2d* obj, bool clickable){
   }
 }
 
+/*void Engine::removeObject3d(vec3 pos){
+  int x = (int)pos.x, y = (int)pos.y;
+  
+  remove(clickable3dObjects, units[x][y]);
+  remove(drawable3dObjects, units[x][y]);
+
+  units[x][y] = NULL;
+}*/
+
 void Engine::removeObject3d(Drawable* obj){
   remove(clickable3dObjects, obj);
   remove(drawable3dObjects, obj);
+
+  vec3& pos = obj->getPosition();
+  int x = (int)pos.x, y = (int)pos.y;
+  units[x][y] = NULL;
 }
 
 float Engine::elapsedTime(){
@@ -427,4 +463,8 @@ void Engine::setOverObject(Drawable* obj){
       game->onOver(overObj);
     }
   }
+}
+
+Drawable* Engine::at(int x, int y){
+  return units[x][y];
 }

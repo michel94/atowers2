@@ -9,6 +9,28 @@
 
 using namespace std;
 
-GLuint loadShader(const string vertex_file_path, const string fragment_file_path);
-GLuint loadShader(const string vertex_file_path, const string fragment_file_path, map<string, GLuint> &ids, vector<string> vars);
+class ShaderData{
+public:
+	ShaderData(){
+		
+	}
+	~ShaderData();
 
+	int operator[] (const string& var) {
+		return variableIds[var];
+	}
+	GLuint getProgram(){
+		return programId;
+	}
+	void setVariable(const string& var, GLuint id){
+		variableIds[var] = id;
+	}
+
+	GLuint programId;
+private:
+	map<string, int> variableIds;
+
+};
+
+ShaderData* loadShader(const string basePath);
+ShaderData* loadShader(const string vertex_file_path, const string fragment_file_path);
