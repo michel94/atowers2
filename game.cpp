@@ -10,7 +10,6 @@
 using namespace std;
 using namespace glm;
 
-
 const int SCREEN_WIDTH = 1200, SCREEN_HEIGHT = 675;
 
 void Game::loadScene(){
@@ -24,33 +23,34 @@ void Game::loadScene(){
     engine->makeClickable(building, true);
   }
 
-  myResources = Resources(34, 27);
+  myResources = Resources(10, 27, 20, 20, 10);
 
   vector<Button*> buttons;
   vector<string> buildings = {"castle", "farm", "hut", "tower", "rock"};
-  vector<string> resources = {"bone", "skin"};
+  vector<string> resourceNames = Resources::getResourceList();
   
   dimensions["castle"] = vec2(1, 1);
   dimensions["farm"] = vec2(1, 1);
   dimensions["hut"] = vec2(1, 1);
   dimensions["tower"] = vec2(2, 2);
-  dimensions["tower"] = vec2(1, 1);
+  dimensions["rock"] = vec2(1, 1);
 
-  int gridWidth = 3;
+  int w = 3;
   vec2 size = vec2(64, 64);
   for(int i=0; i<(signed)buildings.size(); i++){
-    vec2 pos = vec2(980 + (i%gridWidth)*(size.x+8), SCREEN_HEIGHT -200 - size.y - (i/gridWidth)*(size.y+8) );
+    vec2 pos = vec2(980 + (i%w)*(size.x+8), SCREEN_HEIGHT -200 - size.y - (i/w)*(size.y+8) );
     Button* button = new Button(buildings[i], pos, size);
     engine->addObject2d(button);
     engine->makeClickable(button, true);
     
   }
 
+  int gridWidth = 5;
   vec2 size2 = vec2(32, 32);
-  vector<Textbox*> textboxes; textboxes.resize((signed)resources.size());
-  for(int i=0; i<(signed)resources.size(); i++){
+  vector<Textbox*> textboxes; textboxes.resize((signed)resourceNames.size());
+  for(int i=0; i < (signed) resourceNames.size(); i++){
     vec2 pos = vec2(980 + (i%gridWidth)*(size2.x+8), SCREEN_HEIGHT -10 - size2.y - (i/gridWidth)*(size2.y+8));
-    Image* image = new Image(resources[i], pos, size2);
+    Image* image = new Image(resourceNames[i], pos, size2);
     engine->addObject2d(image);
     engine->makeClickable(image, true);
     
@@ -62,6 +62,10 @@ void Game::loadScene(){
   }
   myResources.setTextboxes(textboxes);
 
+}
+
+Resources* Game::getResources(){
+  return &myResources;
 }
 
 Game::Game(){
@@ -96,15 +100,15 @@ void Game::onClick(Drawable* obj, int button){
       engine->removeObject3d(cursor);
       cursor = NULL;
     }else if(button == GLFW_MOUSE_BUTTON_LEFT){ // TODO: map strings to constructors
-      vec3 pos = obj->getPosition();
-      string name = ((Building*)cursor)->getName();
-      Building* building = new Building( name, vec3(pos.x, pos.y, 0));
-      engine->addObject3d(building);
-      engine->makeClickable(building, true);
+      if(cursor->enoughResources()){
+        vec3 pos = obj->getPosition();
+        string name = ((Building*)cursor)->getName();
+        Building* building = BuildingFactory::newByName(name, vec3(pos.x, pos.y, 0));
+        engine->addObject3d(building);
+        engine->makeClickable(building, true);
 
-      Resources sub(4, 3);
-      myResources.update(myResources - sub);
-      //cout << myResources.getBone() << " " << myResources.getSkin() << endl;
+        myResources.update(myResources - building->getCost());
+      }
     }
 
   }
@@ -120,7 +124,7 @@ void Game::onButtonClick(string name){
       cursor->over->overred = false;
   }
   
-  cursor = new Cursor(name, vec3(0, 0, 0), engine);
+  cursor = new Cursor(name, vec3(0, 0, 0), &myResources);
   if(!cursor)
     return;
   

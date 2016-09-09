@@ -25,14 +25,14 @@ Engine::Engine(GameLogic* game, int width, int height){
   openglInit();
 
   last_tick = glfwGetTime();
-  glfwSetMouseButtonCallback(window, mouseCallback);
-  glfwSetCursorPosCallback(window, cursorMoveCallback);
+  setMouseButtonCallback(window, mouseCallback);
+  setCursorPosCallback(window, cursorMoveCallback);
   glfwSetKeyCallback(window, keyboardCallback);
   glfwSetScrollCallback(window, scrollCallback);
   glfwSetWindowSizeCallback(window, resizeCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
-  initKeyboard();
+  initKeyboard(window);
   init_freetype();
 }
 
@@ -285,8 +285,10 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
   // TODO: Use keyboard callback to remove lag
   /*if(action != 2)
     printf("%d %d\n", key, action);*/
-  if(action == 0)
-    printf("key %d action %d time %f\n", scancode, action, glfwGetTime());
+  if(action == GLFW_RELEASE){
+    printf("scancode %d action %d time %f\n", scancode, action, glfwGetTime());
+    setKey(key, false);
+  }
 }
 
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){

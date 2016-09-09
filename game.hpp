@@ -14,20 +14,34 @@
 
 class Cursor : public Building {
 public:
-  Cursor(string name, vec3 pos, Engine* engine) : Building(name, pos){
+  Cursor(string name, vec3 pos, Resources* res) : Building(name, pos){
     setShader("blended");
-    this->engine = engine;
+    this->res = res;
+    //building = BuildingFactory::newBuildingByName()
+    //myResources - building->getCost()
   }
   virtual void draw(float elapsed, ShaderData& shader, mat4* MVP){
-    if(!over)
-      Building::draw(elapsed, shader, MVP);
-    
+    if(!over){
+      if(enoughResources()){
+        vec4 v = vec4(1.0, 1.0, 1.0, 1.0);
+        glUniform4fv(shader["colorMix"], 1, &v[0]);
+      }else{
+        glUniform4fv(shader["colorMix"], 1, &colorMix[0]);
+      }
+      Object::draw(elapsed, shader, MVP);
+    }
+  }
+
+  bool enoughResources(){
+    return (*res - BuildingFactory::getCost(name)).isPositive();
   }
 
   Building* over = NULL;
 private:
+  vec4 colorMix = vec4(1.5, 1.5, 0.5, 1.0);
   bool canBuild = false;
-  Engine* engine;
+  Building* building;
+  Resources* res;
 };
 
 class Game : public GameLogic{
@@ -40,6 +54,8 @@ public:
   void onMenuOver(Drawable2d* obj);
   void onMenuClick(Drawable2d* obj, int button);
   void onButtonClick(string name);
+
+  Resources* getResources();
 private:
   Resources myResources;
   Engine* engine;

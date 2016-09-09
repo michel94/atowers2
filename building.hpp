@@ -6,7 +6,7 @@ public:
     this->name = name;
     setShader("blended");
   };
-  ~Building(){;}
+  virtual ~Building(){;}
   void onClick(GameLogic* game, int button){
     printf("Clicked on %s\n", name.c_str());
   }
@@ -19,10 +19,14 @@ public:
     }
     Object::draw(elapsed, shader, MVP);
   }
+  virtual Resources getCost(){
+  	return cost;
+  }
 
   string getName(){
     return name;
   }
+
 
   bool overred = false;
 private:
@@ -30,40 +34,50 @@ private:
 
 protected:
   string name;
-  Resources resources;
+  Resources cost;
+  vec2 dimensions = vec2(1,1);
 
 };
 
 class Hut : public Building {
 public:
 	Hut(vec3 pos) : Building("hut", pos){
-
+		cost = Resources(1, 4, 1, 5, 3);
 	}
 };
 
 class Rock : public Building {
 public:
 	Rock(vec3 pos) : Building("rock", pos){
-
+		cost = Resources(0, 0, 0, 0, 0);
 	}
 };
 
 class Tower : public Building {
 public:
 	Tower(vec3 pos) : Building("tower", pos){
-
+		cost = Resources(0, 2, 1, 10, 14);
+		dimensions = vec2(2, 2);
 	}
 };
 
 class BuildingFactory{
 public:
-	static Building* newBuildingByName(string name, vec3 pos){
+	static Building* newByName(string name, vec3 pos){
 		if(name == "hut")
 			return (Building*) new Hut(pos);
 		else if(name == "rock")
 			return (Building*) new Rock(pos);
 		else if(name == "tower")
 			return (Building*) new Tower(pos);
+		else
+			return (Building*) new Rock(pos);
 	}
 	
+	static Resources getCost(string name){
+		Building* b = newByName(name, vec3(0,0,0));
+		Resources r = b->getCost();
+		delete b;
+		return r;
+	}
 };
