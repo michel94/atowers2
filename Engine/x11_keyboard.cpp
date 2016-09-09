@@ -2,17 +2,21 @@
 
 #if __linux__
 
-#include <iostream>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
-#include <string.h>
-#include <stdio.h>
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <vector>
 
 using namespace std;
 
-int keycodes[256], scancodes[GLFW_KEY_LAST + 1];
+#define Button6 6
+#define Button7 7
+
+int keycodes[256], eventTime[256], scancodes[GLFW_KEY_LAST + 1];
 bool state[GLFW_KEY_LAST + 1];
 
 static int translateKeyCode(int scancode){
@@ -192,13 +196,14 @@ static int translateKeyCode(int scancode){
   return GLFW_KEY_UNKNOWN;
 }
 
-void initKeyboard(){
+void initKeyboard(GLFWwindow* w){
   int scancode, key;
   Display* display = glfwGetX11Display();
 
   memset(keycodes, -1, sizeof(keycodes));
   memset(scancodes, -1, sizeof(scancodes));
   memset(state, 0, sizeof(state));
+  memset(eventTime, 0, sizeof(eventTime));
 
   if (true) {
     // Use XKB to determine physical key locations independently of the current
@@ -285,33 +290,138 @@ void initKeyboard(){
     if (keycodes[scancode] > 0)
       scancodes[keycodes[scancode]] = scancode;
   }
+  unsigned long event_mask = FocusChangeMask | KeyPressMask | KeyReleaseMask | ButtonPressMask  | ButtonReleaseMask | PointerMotionMask;
+  Window window = glfwGetX11Window(w);
+  //XSelectInput(display,window,event_mask);
+
+  //cout <<  CirculateNotify << " " << ConfigureNotify << " " << CreateNotify << " " << DestroyNotify << " " << GravityNotify << " " << MapNotify << " " << ReparentNotify << " " << UnmapNotify << " " << " " << Expose << " " << FocusIn << " " << FocusOut << " " << NoExpose << " " << GraphicsExpose << " " << PropertyNotify << " " << ResizeRequest << " " << ClientMessage << " " << SelectionRequest << " " << SelectionNotify << " " << endl; 
 }
 
 int getKey(GLFWwindow* w, int scancode){
   return state[scancode];
 }
+void setKey(int key, bool b){
+  state[key] = b;
+}
+
+string event2str(int type){
+  if(type == MotionNotify)
+    return "MotionNotify";
+  else if(type == ButtonPress)
+    return "ButtonPress";
+  else if(type == ButtonRelease)
+    return "ButtonRelease";
+  else if(type == KeymapNotify)
+    return "KeymapNotify";
+  else if(type == KeyPress)
+    return "KeyPress";
+  else if(type == KeyRelease)
+    return "KeyRelease";
+  else if(type == VisibilityNotify)
+    return "VisibilityNotify";
+  else if(type == ButtonPress)
+    return "ButtonPress";
+  else if(type == ButtonPress)
+    return "ButtonPress";
+  else
+    return "Unknown";
+}
+
+bool motionCallbackActive = false;
+GLFWcursorposfun motionCallback = NULL;
+GLFWwindow* motionWindow = NULL;
+
+bool mouseCallbackActive = false;
+GLFWmousebuttonfun mouseCallback = NULL;
+GLFWwindow* mouseWindow = NULL;
+
+int translateState(int state){
+    int mods = 0;
+
+    if (state & ShiftMask)
+        mods |= GLFW_MOD_SHIFT;
+    if (state & ControlMask)
+        mods |= GLFW_MOD_CONTROL;
+    if (state & Mod1Mask)
+        mods |= GLFW_MOD_ALT;
+    if (state & Mod4Mask)
+        mods |= GLFW_MOD_SUPER;
+
+    return mods;
+}
+
+int translateButton(int b){
+  switch(b){
+    case Button1: return GLFW_MOUSE_BUTTON_LEFT;
+    case Button2: return GLFW_MOUSE_BUTTON_MIDDLE;
+    case Button3: return GLFW_MOUSE_BUTTON_RIGHT;
+    case Button4:
+    case Button5:
+    case Button6:
+    case Button7:
+      return -1;
+    default:
+      return b - Button1 - 4;
+
+  }
+}
 
 void pollEvents(){
   Display* display = glfwGetX11Display();
   int count = XPending(display);
+  vector<XEvent> events;
   while (count--){
     XEvent event;
     XNextEvent(display, &event);
     if (event.type == KeyPress || event.type == KeyRelease){
       int keycode = event.xkey.keycode;
-      //cout << keycode << " - " << keycodes[keycode] << ((event.type == KeyPress) ? " KeyPress" : " KeyRelease") << endl;
-      int scancode = keycodes[keycode];
-      // TODO: Lost key release events - can be handled using time after last key pressed received
-      if(event.type == KeyPress)
-        state[scancode] = true;
-      if(event.type == KeyRelease)
-        state[scancode] = false;
+      //cout << keycode << " - " << keycodes[keycode] << ((event.type == KeyPress) ? " KeyPress " : " KeyRelease ") << event.xkey.time <<  endl;
+      if(event.type != KeyPress || (signed) event.xkey.time > eventTime[keycode]){
+        eventTime[keycode] = event.xkey.time;
+        int scancode = keycodes[keycode];
+        if(event.type == KeyPress)
+          state[scancode] = true;
+        if(event.type == KeyRelease){
+          state[scancode] = false;
+        }
+      }
+    }else if(event.type == MotionNotify){
+      if(motionCallbackActive)
+        motionCallback(motionWindow, event.xkey.x, event.xkey.y);
+
+    }else if(event.type == ButtonPress || event.type == ButtonRelease){
+
+      int action = ((event.type == ButtonPress) ? GLFW_PRESS : GLFW_RELEASE);
+      int button = translateButton(event.xbutton.button);
+      int mods = translateState(event.xbutton.state);
+
+      if(button != -1 && mouseCallbackActive)
+        mouseCallback(mouseWindow, button, action, mods);
+      else if(button == -1){
+        //TODO: Scroll
+      }
     }else{
-      XPutBackEvent(display, &event);
+      if(event.type != MotionNotify)
+        events.push_back(event);
     }
+    for(int i=0; i<(signed)events.size(); i++)
+      XPutBackEvent(display, &events[i]);
+
   }
   XFlush(display);
   glfwPollEvents();
+}
+
+void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun cursorMoveCallback){
+  motionCallback = cursorMoveCallback;
+  motionCallbackActive = true;
+  motionWindow = window;
+}
+
+void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun mouseButtonCallback){
+  mouseCallback = mouseButtonCallback;
+  mouseCallbackActive = true;
+  mouseWindow = window;
 }
 
 #else
@@ -325,6 +435,14 @@ void initKeyboard(){
 
 int getKey(GLFWwindow* w, int scancode){
   return glfwGetKey(w, scancode);
+}
+void setKey(int scancode, bool b){
+}
+void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun cursorMoveCallback){
+  glfwSetCursorPosCallback(window, cursorMoveCallback);
+}
+void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun mouseButtonCallback){
+  glfwSetMouseButtonCallback(window, mouseButtonCallback);
 }
 
 #endif
