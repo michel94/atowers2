@@ -7,7 +7,7 @@ class Object : public Drawable{
 public:
   Object(string name, vec3 pos);
   
-  virtual void draw(ShaderData& shader, mat4* MVP);
+  virtual void draw(float elapsed, ShaderData& shader, mat4* MVP);
   vector<Triangle> getTriangles();
   vec2 getSize();
 

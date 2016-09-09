@@ -1,5 +1,7 @@
 #include "engine.hpp"
 #include "filemanager.hpp"
+#include "keyboard.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <map>
@@ -9,6 +11,10 @@ using namespace glm;
 const float MAX_ZOOM = 5, MIN_ZOOM = 0.5;
 const float BAR_PROP = 0.2;
 
+
+void init_freetype(){
+  
+}
 
 Engine::Engine(GameLogic* game, int width, int height){
   SCREEN_WIDTH = width;
@@ -26,6 +32,8 @@ Engine::Engine(GameLogic* game, int width, int height){
   glfwSetWindowSizeCallback(window, resizeCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 
+  initKeyboard();
+  init_freetype();
 }
 
 bool contains(vec2 orig, vec2 size, vec2 point){
@@ -47,6 +55,7 @@ void Engine::loadAvailableShaders() {
   shaders["none"] = new ShaderData();
 }
 
+
 void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
   loadAvailableShaders();
 
@@ -61,14 +70,13 @@ void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
     units[i] = new Drawable*[mapWidth]();
     for(int j = 0; j < mapWidth; j++){
       terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
-      terrain[i][j]->getProperties()->is2d = false;
       clickable3dObjects[id++] = terrain[i][j];
       drawable3dObjects.push_back(terrain[i][j]);
     }
   }
   glUseProgram(0);
   boardTexture = Loader::loadPng("menu/board.png");
-
+  
 }
 
 void Engine::drawTriangles(Drawable* obj, unsigned int color){
@@ -108,13 +116,13 @@ void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
     glTexCoord2f(0.0f, 1.0f); glVertex2f(leftX, windowHeight);
   glEnd();
   glScalef(windowWidth/initialWidth, windowHeight/initialHeight, 1.0f);
+  ShaderData& shader = *(shaders["none"]);
   for(int i=0; i<(signed)drawable2dObjects.size(); i++){
     //ShaderData& shader = *(shaders[drawable3dObjects[i]->getShader()]);
     //glUseProgram(shader.getProgram());
-    ShaderData& shader = *(shaders["none"]);
-    drawable2dObjects[i]->draw(shader, NULL);
+    drawable2dObjects[i]->draw(elapsed, shader, NULL);
   }
-
+  
   handleClick2d(windowWidth, windowHeight);
 }
 
@@ -135,11 +143,10 @@ void Engine::render3d(float elapsed, int windowWidth, int windowHeight){
 
   handleClick3d(MVP, windowWidth, windowHeight);
 
-
   for(int i=0; i<(signed)drawable3dObjects.size(); i++){
     ShaderData* shader = shaders[drawable3dObjects[i]->getShader()];
     glUseProgram(shader->getProgram());
-    drawable3dObjects[i]->draw(*shader, &MVP);
+    drawable3dObjects[i]->draw(elapsed, *shader, &MVP);
   }
 
 }
@@ -167,7 +174,7 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
   
   pendingMove = false;
   glLoadMatrixf(&MVP[0][0]);
-
+  
   glDisable (GL_BLEND);
   glDisable (GL_DITHER);
   glDisable (GL_FOG);
@@ -194,10 +201,10 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
   setOverObject(getCurrentClickable());
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
 }
 
 void Engine::run(){
+  float tRender3d, tSwap;
   do{
     float elapsed = elapsedTime();
     showFPS(elapsed);
@@ -218,16 +225,17 @@ void Engine::run(){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
     
     render2d(elapsed, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glFlush();
     glFinish();
 
+    pollEvents();
     glfwSwapBuffers(window);
-    glfwPollEvents();
 
-} while( glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+} while( getKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
      glfwWindowShouldClose(window) == 0 );
 
   glfwDestroyWindow(window);
@@ -277,6 +285,8 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
   // TODO: Use keyboard callback to remove lag
   /*if(action != 2)
     printf("%d %d\n", key, action);*/
+  if(action == 0)
+    printf("key %d action %d time %f\n", scancode, action, glfwGetTime());
 }
 
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
@@ -311,7 +321,7 @@ Drawable* Engine::getCurrentClickable(){
 
 bool Engine::checkCameraKeys(){
   for(int i=0; i < (signed) cameraKeys.size(); i++)
-    if(glfwGetKey(window, cameraKeys[i]))
+    if(getKey(window, cameraKeys[i]))
       return true;
   return false;
 }
@@ -320,27 +330,27 @@ void Engine::updateCamera(float dt){
   if(checkCameraKeys())
     pendingMove = true;
 
-  if(glfwGetKey(window, GLFW_KEY_LEFT))
+  if(getKey(window, GLFW_KEY_LEFT))
     angleX -= 50*dt;
-  if(glfwGetKey(window, GLFW_KEY_RIGHT))
+  if(getKey(window, GLFW_KEY_RIGHT))
     angleX += 50*dt;
-  if(glfwGetKey(window, GLFW_KEY_UP) && angleY > -80)
+  if(getKey(window, GLFW_KEY_UP) && angleY > -80)
     angleY -= 50*dt;
-  if(glfwGetKey(window, GLFW_KEY_DOWN) && angleY < -30)
+  if(getKey(window, GLFW_KEY_DOWN) && angleY < -30)
     angleY += 50*dt;
-  if(glfwGetKey(window, GLFW_KEY_W)){
+  if(getKey(window, GLFW_KEY_W)){
     posX -= 0.5 * dt * cos(radians(-angleX+90));
     posY -= 0.5 * dt * sin(radians(-angleX+90));
   }
-  if(glfwGetKey(window, GLFW_KEY_S)){
+  if(getKey(window, GLFW_KEY_S)){
     posX += 0.5 * dt * cos(radians(-angleX+90));
     posY += 0.5 * dt * sin(radians(-angleX+90));
   }
-  if(glfwGetKey(window, GLFW_KEY_A)){
+  if(getKey(window, GLFW_KEY_A)){
     posX += 0.5 * dt * cos(radians(-angleX));
     posY += 0.5 * dt * sin(radians(-angleX));
   }
-  if(glfwGetKey(window, GLFW_KEY_D)){
+  if(getKey(window, GLFW_KEY_D)){
     posX -= 0.5 * dt * cos(radians(-angleX));
     posY -= 0.5 * dt * sin(radians(-angleX));
   }
@@ -348,8 +358,6 @@ void Engine::updateCamera(float dt){
 }
 
 void Engine::addObject3d(Drawable* obj){
-  obj->getProperties()->is2d = false;
-
   drawable3dObjects.push_back(obj);
   vec3& pos = obj->getPosition();
   int x = (int)pos.x, y = (int)pos.y;
@@ -366,7 +374,6 @@ double Engine::getTerrainHeight(int x, int y){
 
 void Engine::addObject2d(Drawable2d* obj){
   obj->getProperties()->is2d = true;
-
   drawable2dObjects.push_back(obj);
 }
 

@@ -27,6 +27,13 @@ find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIRS})
 link_libraries(${PNG_LIBRARIES})
 
+find_package(X11)
+include_directories(${X11_INCLUDE_DIRS})
+link_libraries(${X11_LIBRARIES})
+
+find_package(Freetype REQUIRED)
+include_directories(${FREETYPE_INCLUDE_DIRS})
+
 #########################################################
 # Include Files
 #########################################################

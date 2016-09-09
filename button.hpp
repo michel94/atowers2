@@ -16,3 +16,12 @@ public:
 private:
   string name;
 };
+
+class Image : public Quad{
+public:
+  Image(string name, vec2 pos, vec2 size) : Quad(Loader::loadPng("menu/" + name + ".png"), pos, size) {
+    this->name = name;
+  }
+private:
+  string name;
+};

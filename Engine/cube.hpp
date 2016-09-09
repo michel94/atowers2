@@ -6,7 +6,7 @@
 class Cube : public Drawable{
 public:
   Cube(int, vec3);
-  virtual void draw(ShaderData& shader, mat4* MVP); // TODO: check this virtual
+  virtual void draw(float elapsed, ShaderData& shader, mat4* MVP); // TODO: check this virtual
   vector<Triangle> getTriangles();
 
 private:

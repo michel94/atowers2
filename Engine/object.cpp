@@ -1,7 +1,7 @@
 #include "object.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
-void Object::draw(ShaderData& shader, mat4* MVP){
+void Object::draw(float elapsed, ShaderData& shader, mat4* MVP){
   mat4 tr = translate(mat4(), pos);
   mat4 localMVP = *MVP * tr;
   glUniformMatrix4fv(shader["MVP"], 1, GL_FALSE, &localMVP[0][0]);

@@ -25,7 +25,7 @@ public:
 
 class Drawable{
 public:
-	virtual void draw(ShaderData& shader, mat4* MVP) = 0;
+	virtual void draw(float elapsed, ShaderData& shader, mat4* MVP) = 0;
 	void drawTexturedQuads(GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	void drawTexturedTriangles(GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
 	void drawTexturedPolygons(GLuint type, GLuint elementsVBO, GLuint verticesVBO, int nVertices, GLuint texId, GLuint texCoordsVBO);
@@ -38,16 +38,22 @@ public:
 	virtual vector<Triangle> getTriangles(){return vector<Triangle>();}
 	virtual void onClick(GameLogic*, int) = 0;
 
-	Properties* getProperties();
+	virtual Properties* getProperties();
 protected:
 	vec3 pos = vec3(0,0,0);
 	bool clickable = false;
 
-	Properties properties;
+	Properties properties = {false};
 	string SHADER = "textured";
 };
 
 class Drawable2d : public Drawable{
 public:
 	virtual vec2 getSize() = 0;
+
+	Properties* getProperties(){
+		return &properties;
+	}
+protected:
+	Properties properties = {true};
 };

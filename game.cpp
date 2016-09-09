@@ -3,6 +3,7 @@
 #include "game.hpp"
 #include "mapgenerator.hpp"
 #include "button.hpp"
+#include "Engine/textbox.hpp"
 
 #define SCREEN_SIZE_CUT 1.2f
 
@@ -23,8 +24,11 @@ void Game::loadScene(){
     engine->makeClickable(building, true);
   }
 
+  myResources = Resources(34, 27);
+
   vector<Button*> buttons;
   vector<string> buildings = {"castle", "farm", "hut", "tower", "rock"};
+  vector<string> resources = {"bone", "skin"};
   
   dimensions["castle"] = vec2(1, 1);
   dimensions["farm"] = vec2(1, 1);
@@ -35,11 +39,28 @@ void Game::loadScene(){
   int gridWidth = 3;
   vec2 size = vec2(64, 64);
   for(int i=0; i<(signed)buildings.size(); i++){
-    Button* button = new Button(buildings[i], vec2(980 + (i%gridWidth)*(size.x+8), SCREEN_HEIGHT -30 - size.y - (i/gridWidth)*(size.y+8) ), size);
+    vec2 pos = vec2(980 + (i%gridWidth)*(size.x+8), SCREEN_HEIGHT -200 - size.y - (i/gridWidth)*(size.y+8) );
+    Button* button = new Button(buildings[i], pos, size);
     engine->addObject2d(button);
     engine->makeClickable(button, true);
+    
+  }
+
+  vec2 size2 = vec2(32, 32);
+  vector<Textbox*> textboxes; textboxes.resize((signed)resources.size());
+  for(int i=0; i<(signed)resources.size(); i++){
+    vec2 pos = vec2(980 + (i%gridWidth)*(size2.x+8), SCREEN_HEIGHT -10 - size2.y - (i/gridWidth)*(size2.y+8));
+    Image* image = new Image(resources[i], pos, size2);
+    engine->addObject2d(image);
+    engine->makeClickable(image, true);
+    
+    pos += vec2(7, -13);
+    Textbox* textbox = new Textbox(pos, 120, "15");
+    engine->addObject2d(textbox);
+    textboxes[i] = textbox;
 
   }
+  myResources.setTextboxes(textboxes);
 
 }
 
@@ -70,17 +91,22 @@ void Game::onOver(Drawable* obj){
 }
 
 void Game::onClick(Drawable* obj, int button){
-  if(button == GLFW_MOUSE_BUTTON_RIGHT){
-    engine->removeObject3d(cursor);
-    cursor = NULL;
-  }
-   // TODO: map strings to constructors
-  if(cursor && button == GLFW_MOUSE_BUTTON_LEFT){
-    vec3 pos = obj->getPosition();
-    string name = ((Building*)cursor)->getName();
-    Building* building = new Building( name, vec3(pos.x, pos.y, 0));
-    engine->addObject3d(building);
-    engine->makeClickable(building, true);
+  if(cursor){
+    if(button == GLFW_MOUSE_BUTTON_RIGHT){
+      engine->removeObject3d(cursor);
+      cursor = NULL;
+    }else if(button == GLFW_MOUSE_BUTTON_LEFT){ // TODO: map strings to constructors
+      vec3 pos = obj->getPosition();
+      string name = ((Building*)cursor)->getName();
+      Building* building = new Building( name, vec3(pos.x, pos.y, 0));
+      engine->addObject3d(building);
+      engine->makeClickable(building, true);
+
+      Resources sub(4, 3);
+      myResources.update(myResources - sub);
+      //cout << myResources.getBone() << " " << myResources.getSkin() << endl;
+    }
+
   }
 }
 
