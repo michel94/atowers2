@@ -1,5 +1,6 @@
 #include "Engine/textbox.hpp"
 
+
 class Resources{
 public:
   Resources(){
@@ -86,14 +87,19 @@ public:
     return bone >= 0 && skin >= 0 && food >= 0 && wood >= 0 && stone >= 0;
   }
 
+  bool enoughResources(Resources res){
+    return (*this - res).isPositive();
+  }
+
+  Resources operator+ (Resources r2) {
+    return Resources(getBone() + r2.getBone(), getSkin() + r2.getSkin(), getFood() + r2.getFood(), getWood() + r2.getWood(), getStone() + r2.getStone());
+  }
+  Resources operator- (Resources r2) {
+    return Resources(getBone() - r2.getBone(), getSkin() - r2.getSkin(), getFood() - r2.getFood(), getWood() - r2.getWood(), getStone() - r2.getStone());
+  }
+
 private:
   int bone, skin, food, wood, stone;
   Textbox *skinT=NULL, *boneT=NULL, *foodT=NULL, *woodT=NULL, *stoneT=NULL;
 
 };
-Resources operator+ (Resources& r1, Resources r2) {
-  return Resources(r1.getBone() + r2.getBone(), r1.getSkin() + r2.getSkin(), r1.getFood() + r2.getFood(), r1.getWood() + r2.getWood(), r1.getStone() + r2.getStone());
-}
-Resources operator- (Resources& r1, Resources r2) {
-  return Resources(r1.getBone() - r2.getBone(), r1.getSkin() - r2.getSkin(), r1.getFood() - r2.getFood(), r1.getWood() - r2.getWood(), r1.getStone() - r2.getStone());
-}

@@ -27,8 +27,8 @@ Engine::Engine(GameLogic* game, int width, int height){
   last_tick = glfwGetTime();
   setMouseButtonCallback(window, mouseCallback);
   setCursorPosCallback(window, cursorMoveCallback);
+  setScrollCallback(window, scrollCallback);
   glfwSetKeyCallback(window, keyboardCallback);
-  glfwSetScrollCallback(window, scrollCallback);
   glfwSetWindowSizeCallback(window, resizeCallback);
   glfwSetFramebufferSizeCallback(window, resizeCallback);
 

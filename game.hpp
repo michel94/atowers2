@@ -22,7 +22,7 @@ public:
   }
   virtual void draw(float elapsed, ShaderData& shader, mat4* MVP){
     if(!over){
-      if(enoughResources()){
+      if(res->enoughResources( BuildingFactory::getCost(name) )){
         vec4 v = vec4(1.0, 1.0, 1.0, 1.0);
         glUniform4fv(shader["colorMix"], 1, &v[0]);
       }else{
@@ -30,10 +30,6 @@ public:
       }
       Object::draw(elapsed, shader, MVP);
     }
-  }
-
-  bool enoughResources(){
-    return (*res - BuildingFactory::getCost(name)).isPositive();
   }
 
   Building* over = NULL;

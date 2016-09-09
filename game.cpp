@@ -100,7 +100,8 @@ void Game::onClick(Drawable* obj, int button){
       engine->removeObject3d(cursor);
       cursor = NULL;
     }else if(button == GLFW_MOUSE_BUTTON_LEFT){ // TODO: map strings to constructors
-      if(cursor->enoughResources()){
+      Resources cost = BuildingFactory::getCost(cursor->getName());
+      if(myResources.enoughResources(cost)){
         vec3 pos = obj->getPosition();
         string name = ((Building*)cursor)->getName();
         Building* building = BuildingFactory::newByName(name, vec3(pos.x, pos.y, 0));

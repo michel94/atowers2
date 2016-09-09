@@ -335,6 +335,10 @@ bool mouseCallbackActive = false;
 GLFWmousebuttonfun mouseCallback = NULL;
 GLFWwindow* mouseWindow = NULL;
 
+bool scrollCallbackActive = false;
+GLFWscrollfun scrollCallback = NULL;
+GLFWwindow* scrollWindow = NULL;
+
 int translateState(int state){
     int mods = 0;
 
@@ -397,8 +401,21 @@ void pollEvents(){
 
       if(button != -1 && mouseCallbackActive)
         mouseCallback(mouseWindow, button, action, mods);
-      else if(button == -1){
+      else if(button == -1 && scrollCallbackActive){
         //TODO: Scroll
+        float x, y;
+
+        if (event.xbutton.button == Button4){
+          x = 0.0; y = 1.0;
+        }else if (event.xbutton.button == Button5){
+          x = 0.0; y = -1.0;
+        }else if (event.xbutton.button == Button6){
+          x = 1.0; y = 0.0;
+        }else if (event.xbutton.button == Button7){
+          x = -1.0; y = 0.0;
+        }
+
+        scrollCallback(scrollWindow, x, y);
       }
     }else{
       if(event.type != MotionNotify)
@@ -412,17 +429,23 @@ void pollEvents(){
   glfwPollEvents();
 }
 
-void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun cursorMoveCallback){
-  motionCallback = cursorMoveCallback;
+void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback){
+  motionCallback = callback;
   motionCallbackActive = true;
   motionWindow = window;
 }
 
-void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun mouseButtonCallback){
-  mouseCallback = mouseButtonCallback;
+void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback){
+  mouseCallback = callback;
   mouseCallbackActive = true;
   mouseWindow = window;
 }
+void setScrollCallback(GLFWwindow* window, GLFWscrollfun callback) {
+  scrollCallback = callback;
+  scrollCallbackActive = true;
+  scrollWindow = window;
+}
+
 
 #else
 
@@ -438,11 +461,14 @@ int getKey(GLFWwindow* w, int scancode){
 }
 void setKey(int scancode, bool b){
 }
-void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun cursorMoveCallback){
-  glfwSetCursorPosCallback(window, cursorMoveCallback);
+void setCursorPosCallback(GLFWwindow* window, GLFWcursorposfun callback){
+  glfwSetCursorPosCallback(window, callback);
 }
-void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun mouseButtonCallback){
-  glfwSetMouseButtonCallback(window, mouseButtonCallback);
+void setMouseButtonCallback(GLFWwindow* window, GLFWmousebuttonfun callback){
+  glfwSetMouseButtonCallback(window, callback);
+}
+void setScrollCallback(GLFWwindow* window, GLFWscrollfun callback) {
+  glfwSetScrollCallback(window, callback);
 }
 
 #endif
