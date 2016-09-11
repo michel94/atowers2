@@ -41,16 +41,16 @@ void Textbox::draw(float elapsed, ShaderData& shader, mat4* MVP){
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA8, g->bitmap.width, g->bitmap.rows, 0, GL_ALPHA, GL_UNSIGNED_BYTE, g->bitmap.buffer);
   
     float x2 = x + g->bitmap_left * sx;
-      float y2 = -y - g->bitmap_top * sy;
-      float w = g->bitmap.width * sx;
-      float h = g->bitmap.rows * sy;
-   
-      GLfloat box[4][4] = {
-          {x2,     -y2    , 0, 0},
-          {x2,     -y2 - h, 0, 1},
-          {x2 + w, -y2 - h, 1, 1},
-          {x2 + w, -y2    , 1, 0},
-      };
+    float y2 = -y - g->bitmap_top * sy;
+    float w = g->bitmap.width * sx;
+    float h = g->bitmap.rows * sy;
+
+    GLfloat box[4][4] = {
+      {x2,     -y2    , 0, 0},
+      {x2,     -y2 - h, 0, 1},
+      {x2 + w, -y2 - h, 1, 1},
+      {x2 + w, -y2    , 1, 0},
+    };
       
     glBegin(GL_QUADS);
       glTexCoord2f(box[0][2], box[0][3]); glVertex2f(box[0][0], box[0][1]);

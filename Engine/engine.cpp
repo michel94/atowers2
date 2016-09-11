@@ -55,26 +55,23 @@ void Engine::loadAvailableShaders() {
   shaders["none"] = new ShaderData();
 }
 
-
-void Engine::loadMap(double** heights, int mapHeight, int mapWidth){
+void Engine::loadMap(Cube*** terrain, int mapHeight, int mapWidth){
   loadAvailableShaders();
 
   units = new Drawable**[mapHeight];
-  terrain = new Cube**[mapHeight];
+  this->terrain = terrain;
   this->mapWidth = mapWidth;
   this->mapHeight = mapHeight;
   clickable3dObjects.resize(mapWidth * mapHeight + 1);
   int id = 1;
   for(int i = 0; i < mapHeight; i++){
-    terrain[i] = new Cube*[mapWidth];
     units[i] = new Drawable*[mapWidth]();
     for(int j = 0; j < mapWidth; j++){
-      terrain[i][j] = new Grass(vec3(i, j, heights[i][j]));
       clickable3dObjects[id++] = terrain[i][j];
       drawable3dObjects.push_back(terrain[i][j]);
     }
   }
-  glUseProgram(0);
+  glUseProgram(0); // TODO: remove this
   boardTexture = Loader::loadPng("menu/board.png");
   
 }
@@ -360,12 +357,12 @@ void Engine::updateCamera(float dt){
 }
 
 void Engine::addObject3d(Drawable* obj){
-  drawable3dObjects.push_back(obj);
   vec3& pos = obj->getPosition();
   int x = (int)pos.x, y = (int)pos.y;
   if(units[x][y] != NULL)
     return;
   units[x][y] = obj;
+  drawable3dObjects.push_back(obj);
   Drawable* land = terrain[x][y];
   pos += vec3(0, 0, land->getPosition().z+1);
   makeClickable(obj);

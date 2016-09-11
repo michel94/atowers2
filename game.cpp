@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include "game.hpp"
-#include "mapgenerator.hpp"
+#include "maploader.hpp"
 #include "button.hpp"
 #include "Engine/textbox.hpp"
 #include "layout.hpp"
@@ -15,7 +15,7 @@ const int SCREEN_WIDTH = 1200, SCREEN_HEIGHT = 675;
 
 void Game::loadScene(){
   int mapHeight = 50, mapWidth = 50;
-  engine->loadMap(MapGenerator::generateMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
+  engine->loadMap(MapLoader::getRandomMap(2, mapHeight, mapWidth), mapHeight, mapWidth);
   
   for(int i=0; i<10; i++){
     Building* building = new Building("hut", vec3(rand()%mapWidth, rand()%mapHeight, 0.0f));
@@ -48,12 +48,11 @@ void Game::loadScene(){
     sizeIcon,
     0.2f*SCREEN_WIDTH,
     {{"padding", "12"}, {"margin", "8"}, {"align", "center"}}
-  );  
+  );
 
   vector<Textbox*> textboxes(resourceNames.size());
   vector<Drawable2d*> groups(resourceNames.size());
   for(int i=0; i < (signed) resourceNames.size(); i++){
-
     Image* image = new Image(resourceNames[i], vec2(0, 0), sizeIcon);
     Textbox* textbox = new Textbox(vec2(7, -13), 120, "");
 

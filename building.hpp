@@ -1,4 +1,5 @@
 #include "resources.hpp"
+#include "Engine/object.hpp"
 
 class Building : public Object {
 public:
@@ -26,7 +27,6 @@ public:
   string getName(){
     return name;
   }
-
 
   bool overred = false;
 private:

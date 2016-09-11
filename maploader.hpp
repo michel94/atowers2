@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <map>
 #include <utility>
+#include "Engine/cube.hpp"
 
 using namespace std;
 
-class MapGenerator{
+class MapLoader{
 public:
+  static Cube*** getRandomMap(int amplitude, int width, int height);
 	static double** generateMap(int amplitude, int width, int height); 
 private:
 	static map<pair<int, int>, double> noises;

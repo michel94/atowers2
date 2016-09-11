@@ -2,11 +2,11 @@
 
 #include "opengl.h"
 #include <GLFW/glfw3.h>
-#include "shaders.hpp"
-#include "terrain.hpp"
-#include "object.hpp"
 #include <vector>
 #include <set>
+
+#include "shaders.hpp"
+#include "cube.hpp"
 
 using namespace std;
 
@@ -14,7 +14,7 @@ class Engine{
 public:
   Engine(GameLogic* game, int width, int height);
   ~Engine();
-  void loadMap(double** matrix, int, int);
+  void loadMap(Cube*** terrain, int, int);
   void run();
 
   int getColorId();
