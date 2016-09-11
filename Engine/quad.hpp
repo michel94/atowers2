@@ -5,6 +5,9 @@
 
 class Quad : public Drawable2d{
 public:
+  Quad(vec2 pos){
+    this->pos = vec3(pos.x, pos.y, 0);
+  }
   Quad(int texture, vec2 pos, vec2 size){
     this->texture = texture;
     this->pos = vec3(pos.x, pos.y, 0);
@@ -21,10 +24,10 @@ public:
       glTexCoord2f(0.0f, 1.0f); glVertex2f(pos.x, pos.y+size.y);
     glEnd();
   }
-  vec2 getSize(){
+  virtual vec2 getSize(){
     return size;
   }
-  void onClick(GameLogic*, int){}
+  void onClick(GameLogic*, int button, int action, int mods){}
 private:
   int texture;
 protected:

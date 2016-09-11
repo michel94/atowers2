@@ -10,6 +10,8 @@ public:
   virtual void draw(float elapsed, ShaderData& shader, mat4* MVP);
   vector<Triangle> getTriangles();
   vec2 getSize();
+  virtual void setAngle(float);
+  virtual float getAngle();
 
 private:
   int texture;
@@ -23,5 +25,6 @@ private:
   void addTriangle(vector<GLuint> &index, vector<float> &v, int i);
 protected:
   vec2 size = vec2(1.0, 1.0);
+  float angle = 0.0f;
 };
 

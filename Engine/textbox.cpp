@@ -8,7 +8,8 @@ Textbox::Textbox(vec2 pos, int size, string text) : Quad(0, pos, vec2(0, size)){
 }
 
 void Textbox::draw(float elapsed, ShaderData& shader, mat4* MVP){
-  float x = pos.x, y = pos.y, sx = 0.1, sy = 0.1;
+  vec4 position = vec4(pos.x, pos.y, pos.z, 0) * *MVP;
+  float x = position.x, y = position.y, sx = 0.1, sy = 0.1;
 
   const char *p;
   FT_GlyphSlot g = face->glyph;

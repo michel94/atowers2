@@ -403,7 +403,7 @@ void pollEvents(){
         mouseCallback(mouseWindow, button, action, mods);
       else if(button == -1 && scrollCallbackActive){
         //TODO: Scroll
-        float x, y;
+        float x=0.0, y=0.0;
 
         if (event.xbutton.button == Button4){
           x = 0.0; y = 1.0;

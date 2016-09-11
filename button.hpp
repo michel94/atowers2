@@ -6,9 +6,10 @@ class Game;
 class Button : public Quad{
 public:
   Button(string name, vec2 pos, vec2 size) : Quad(Loader::loadPng("buttons/" + name + ".png"), pos, size) {
+  	setClickable(true);
     this->name = name;
   }
-  void onClick(GameLogic* gameLogic, int button){
+  void onClick(GameLogic* gameLogic, int button, int action, int mods){
   	Game* game = (Game*) gameLogic;
   	game->onButtonClick(name);
     cout << "Clicked on button " << name << endl;

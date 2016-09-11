@@ -21,8 +21,6 @@ public:
 
   void addObject3d(Drawable* obj);
   void addObject2d(Drawable2d* obj);
-  void makeClickable(Drawable*, bool);
-  void makeClickable(Drawable2d*, bool);
   void removeObject3d(Drawable* obj);
   void removeObject2d(Drawable2d* obj);
 
@@ -52,10 +50,11 @@ private:
   double timebase = 0, tm = 0, last_tick;
   double fps;
 
-  // Camera
+  /* --- Camera --- */
   float angleX = 45, angleY = -45, posX=0, posY=-1, posZ = 4, zoom = 0.8;
   int mouseX, mouseY;
-  GLuint frameBuffer = 0;
+  //GLuint frameBuffer = 0;
+  /* -------------- */
 
   vector<Drawable*> clickable3dObjects;
   vector<Drawable2d*> clickable2dObjects;
@@ -80,6 +79,8 @@ private:
   void openglInit();
   void render2d(float elapsed, int windowWidth, int windowHeight);
   void render3d(float elapsed, int windowWidth, int windowHeight);
+  void makeClickable(Drawable*);
+  void makeClickable(Drawable2d*);
   void updateCamera(float);
   void loadAvailableShaders();
 

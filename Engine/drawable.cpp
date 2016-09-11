@@ -33,12 +33,16 @@ vec3& Drawable::getPosition() {
   return pos;
 }
 
+void Drawable::setPosition(vec3 pos){
+  this->pos = pos;
+}
+
 bool Drawable::isClickable(){
-  return clickable;
+  return this->properties.clickable;
 }
 
 void Drawable::setClickable(bool clickable){
-  this->clickable = clickable;
+  this->properties.clickable = clickable;
 }
 
 Properties* Drawable::getProperties(){

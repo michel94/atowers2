@@ -33,6 +33,7 @@ public:
   }
 
   Building* over = NULL;
+  bool pressing = false;
 private:
   vec4 colorMix = vec4(1.5, 1.5, 0.5, 1.0);
   bool canBuild = false;
@@ -45,10 +46,10 @@ public:
   Game();
   void loadScene();
   void onOver(Drawable* obj);
-  void onClick(Drawable* obj, int button);
+  void onClick(Drawable* obj, int button, int action, int mods);
 
   void onMenuOver(Drawable2d* obj);
-  void onMenuClick(Drawable2d* obj, int button);
+  void onMenuClick(Drawable2d* obj, int button, int action, int mods);
   void onButtonClick(string name);
 
   Resources* getResources();

@@ -120,7 +120,7 @@ void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
   for(int i=0; i<(signed)drawable2dObjects.size(); i++){
     //ShaderData& shader = *(shaders[drawable3dObjects[i]->getShader()]);
     //glUseProgram(shader.getProgram());
-    drawable2dObjects[i]->draw(elapsed, shader, NULL);
+    drawable2dObjects[i]->draw(elapsed, shader, new mat4());
   }
   
   handleClick2d(windowWidth, windowHeight);
@@ -143,6 +143,8 @@ void Engine::render3d(float elapsed, int windowWidth, int windowHeight){
 
   handleClick3d(MVP, windowWidth, windowHeight);
 
+  glEnable (GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   for(int i=0; i<(signed)drawable3dObjects.size(); i++){
     ShaderData* shader = shaders[drawable3dObjects[i]->getShader()];
     glUseProgram(shader->getProgram());
@@ -214,8 +216,6 @@ void Engine::run(){
     glViewport(0, 0, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable (GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     render3d(elapsed, (1-BAR_PROP)*SCREEN_WIDTH, SCREEN_HEIGHT);
 
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -293,13 +293,13 @@ void Engine::keyboardCallback(GLFWwindow* window, int key, int scancode, int act
 
 void Engine::mouseCallback(GLFWwindow* window, int button, int action, int mods){
   Engine* engine = (Engine*) glfwGetWindowUserPointer(window);
-  if(action == GLFW_PRESS && engine->getOverObject() != NULL){
-    engine->getOverObject()->onClick(engine->getGame(), button);
+  if(engine->getOverObject() != NULL){
+    engine->getOverObject()->onClick(engine->getGame(), button, action, mods);
     if(engine->getGame()){
       if(!engine->getOverObject()->getProperties()->is2d)
-        engine->getGame()->onClick(engine->getOverObject(), button);
+        engine->getGame()->onClick(engine->getOverObject(), button, action, mods);
       else
-        engine->getGame()->onMenuClick((Drawable2d*)engine->getOverObject(), button);
+        engine->getGame()->onMenuClick((Drawable2d*)engine->getOverObject(), button, action, mods);
     }
   }
 }
@@ -368,6 +368,7 @@ void Engine::addObject3d(Drawable* obj){
   units[x][y] = obj;
   Drawable* land = terrain[x][y];
   pos += vec3(0, 0, land->getPosition().z+1);
+  makeClickable(obj);
 }
 
 double Engine::getTerrainHeight(int x, int y){
@@ -377,26 +378,17 @@ double Engine::getTerrainHeight(int x, int y){
 void Engine::addObject2d(Drawable2d* obj){
   obj->getProperties()->is2d = true;
   drawable2dObjects.push_back(obj);
+  makeClickable(obj);
 }
 
-void Engine::makeClickable(Drawable* obj, bool clickable){
-  if(obj->isClickable() == clickable)
-    return;
-  obj->setClickable(clickable);
-
-  if(clickable){
+void Engine::makeClickable(Drawable* obj){
+  if(obj->isClickable()){
     clickable3dObjects.push_back(obj);
-  }else{
-    remove(clickable3dObjects, obj);
   }
 }
 
-void Engine::makeClickable(Drawable2d* obj, bool clickable){
-  if(obj->isClickable() == clickable)
-    return;
-  obj->setClickable(clickable);
-
-  if(clickable){
+void Engine::makeClickable(Drawable2d* obj){
+  if(obj->isClickable()){
     clickable2dObjects.push_back(obj);
   }else{
     remove(clickable2dObjects, obj);
