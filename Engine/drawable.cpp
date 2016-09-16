@@ -38,15 +38,11 @@ void Drawable::setPosition(vec3 pos){
 }
 
 bool Drawable::isClickable(){
-  return this->properties.clickable;
+  return getProperties()->clickable;
 }
 
 void Drawable::setClickable(bool clickable){
-  this->properties.clickable = clickable;
-}
-
-Properties* Drawable::getProperties(){
-  return &properties;
+  getProperties()->clickable = clickable;
 }
 
 string Drawable::getShader(){

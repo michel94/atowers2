@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "filemanager.hpp"
 #include "keyboard.hpp"
+#include "quad.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -36,17 +37,13 @@ Engine::Engine(GameLogic* game, int width, int height){
   init_freetype();
 }
 
-bool contains(vec2 orig, vec2 size, vec2 point){
-  return  point.x >= orig.x && point.x <= orig.x + size.x && 
-      point.y >= orig.y && point.y <= orig.y + size.y;
-}
-
 void Engine::loadAvailableShaders() {
   vector<string> dirs = listDirectories("shaders");
   for(auto name = dirs.begin(); name != dirs.end(); ++name) {
     string path = "shaders/" + *name;
     if( exists(path + "/vertex.glsl") && exists(path + "/frag.glsl") ){
       shaders[*name] = loadShader(path);
+      shaders[*name]->name = *name;
       cout << "Loaded " << *name << " shader." << endl;
     }
   }
@@ -71,53 +68,43 @@ void Engine::loadMap(Cube*** terrain, int mapHeight, int mapWidth){
       drawable3dObjects.push_back(terrain[i][j]);
     }
   }
-  glUseProgram(0); // TODO: remove this
-  boardTexture = Loader::loadPng("menu/board.png");
+
+  // TODO: Custom menu
+  int leftX = (1-BAR_PROP) * initialWidth;
+  Quad* menu = new Quad(Loader::loadPng("menu/board.png"), vec2(leftX, 0), vec2(BAR_PROP * initialWidth, initialHeight));
+  addObject2d(menu);
   
 }
 
-void Engine::drawTriangles(Drawable* obj, unsigned int color){
-  vector<Triangle> triangles = obj->getTriangles();
-  vec3& pos = obj->getPosition();
+inline void Engine::drawColored(ShaderData& shader, mat4 MVP, Drawable* obj, unsigned int color){
   GLubyte r = color & 0x000000FF, g = (color & 0x0000FF00) >> 8,
           b = (color & 0x00FF0000) >> 16, a = (color & 0xFF000000) >> 24;
-  
-  glColor4ub(r, g, b, a);
-  glTranslatef(pos.x, pos.y, pos.z);
-  glBegin(GL_TRIANGLES);
-  for(int i=0; i<(signed)triangles.size(); i++){
-    glVertex3f(triangles[i].p1.x, triangles[i].p1.y, triangles[i].p1.z);
-    glVertex3f(triangles[i].p2.x, triangles[i].p2.y, triangles[i].p2.z);
-    glVertex3f(triangles[i].p3.x, triangles[i].p3.y, triangles[i].p3.z);
-  }
-  glEnd();
+
+  GLfloat v[] = {r/255.0f, g/255.0f, b/255.0f, a/255.0f};
+  glUniform4fv(shader["color"], 1, &v[0]);
+  obj->pureDraw(shader, &MVP);
+
 }
 
 void Engine::render2d(float elapsed, int windowWidth, int windowHeight){
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluOrtho2D(0.0f, windowWidth, 0.0f, windowHeight);
+  mat4 MVP = ortho(0.0f, (float)windowWidth, 0.0f, (float)windowHeight, -1.0f, 1.0f);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   glUseProgram(0);
   // Menu rendered here
   glEnable (GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, boardTexture);
   glColor3f(1.0f, 1.0f, 1.0f);
-  int leftX = (1-BAR_PROP) * windowWidth;
-  glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f); glVertex2f(leftX, 0.0f);
-    glTexCoord2f(1.0f, 0.0f); glVertex2f(windowWidth, 0.0f);
-    glTexCoord2f(1.0f, 1.0f); glVertex2f(windowWidth, windowHeight);
-    glTexCoord2f(0.0f, 1.0f); glVertex2f(leftX, windowHeight);
-  glEnd();
   glScalef(windowWidth/initialWidth, windowHeight/initialHeight, 1.0f);
-  ShaderData& shader = *(shaders["none"]);
+  MVP = scale(MVP, vec3(windowWidth/initialWidth, windowHeight/initialHeight, 1.0f) );
+
   for(int i=0; i<(signed)drawable2dObjects.size(); i++){
-    //ShaderData& shader = *(shaders[drawable3dObjects[i]->getShader()]);
-    //glUseProgram(shader.getProgram());
-    drawable2dObjects[i]->draw(elapsed, shader, new mat4());
+    ShaderData& shader = *(shaders[drawable3dObjects[i]->getShader()]);
+    glUseProgram(shader.getProgram());
+    drawable2dObjects[i]->draw(elapsed, shader, &MVP);
   }
   
   handleClick2d(windowWidth, windowHeight);
@@ -157,12 +144,9 @@ void Engine::handleClick2d(int windowWidth, int windowHeight){
   Drawable2d* over = NULL;
   vec2 scale = vec2(windowWidth/initialWidth, windowHeight/initialHeight);
   for(int i=0; i<(signed)clickable2dObjects.size(); i++){
-    Drawable2d* obj = clickable2dObjects[i];
-    vec2 pos = scale * vec2(obj->getPosition().x, obj->getPosition().y);
-    vec2 size = scale * obj->getSize();
-    if(contains(pos, size, vec2(mouseX, windowHeight - mouseY))){
+    Drawable2d* obj = clickable2dObjects[i]->overredObject(scale, mouseX, windowHeight - mouseY);
+    if(obj)
       over = obj;
-    }
   }
   setOverObject(over);
 }
@@ -182,12 +166,13 @@ void Engine::handleClick3d(mat4 MVP, int windowWidth, int windowHeight){
   glDisable (GL_TEXTURE_2D);
   glDisable (GL_TEXTURE_3D);
   glShadeModel (GL_FLAT);
-  glUseProgram(0);
+
+  ShaderData* shader = shaders["colored"];
+  glUseProgram(shader->getProgram());
+
   unsigned int id = 1;
   for(int i=1; i<(signed)clickable3dObjects.size(); i++){
-    glPushMatrix();
-      drawTriangles(clickable3dObjects[i], i);
-    glPopMatrix();
+    drawColored(*shader, MVP, clickable3dObjects[i], i);
   }
   glFlush();
   glFinish();
@@ -254,6 +239,8 @@ void Engine::openglInit(){
 
   glfwSetWindowUserPointer(window, this);
   glfwSetWindowAspectRatio(window, 16, 9);
+
+  printf("%s\n", glGetString(GL_VERSION));
 
   if (glewInit() != GLEW_OK) {
     printf("Failed to initialize GLEW\n");
@@ -356,16 +343,18 @@ void Engine::updateCamera(float dt){
   
 }
 
-void Engine::addObject3d(Drawable* obj){
+bool Engine::addObject3d(Drawable* obj){
   vec3& pos = obj->getPosition();
   int x = (int)pos.x, y = (int)pos.y;
   if(units[x][y] != NULL)
-    return;
+    return false;
   units[x][y] = obj;
   drawable3dObjects.push_back(obj);
   Drawable* land = terrain[x][y];
   pos += vec3(0, 0, land->getPosition().z+1);
   makeClickable(obj);
+
+  return true;
 }
 
 double Engine::getTerrainHeight(int x, int y){
@@ -376,6 +365,11 @@ void Engine::addObject2d(Drawable2d* obj){
   obj->getProperties()->is2d = true;
   drawable2dObjects.push_back(obj);
   makeClickable(obj);
+}
+
+void Engine::addObject2d(Group2d* obj){
+  obj->setShaders(&shaders);
+  addObject2d((Drawable2d*) obj);
 }
 
 void Engine::makeClickable(Drawable* obj){
@@ -457,6 +451,8 @@ GameLogic* Engine::getGameObject(){
 void Engine::setOverObject(Drawable* obj){
   overObj = obj;
   if(game != NULL){
+    if(overObj != NULL)
+      assert(overObj->getProperties() != NULL);
     if(overObj != NULL && !overObj->getProperties()->is2d){
       game->onOver(overObj);
     }

@@ -165,6 +165,23 @@ int Loader::loadPng(string file_name) {
   return texture;
 }
 
+Model* Loader::loadQuad(){
+  if(meshes.find("quad") != meshes.end())
+    return meshes["quad"];
+
+  Model* model = new Model(
+     {0.0f, 0.0f, 0.0f,
+      0.0f, 1.0f, 0.0f,
+      1.0f, 1.0f, 0.0f,
+      1.0f, 0.0f, 0.0f},
+    {0, 1, 2, 3},
+    {0.0f, 0.0f,
+     0.0f, 1.0f,
+     1.0f, 1.0f,
+     1.0f, 0.0f});
+  return model;
+}
+
 Model* Loader::loadModel(string name){
   if(meshes.find(name) != meshes.end())
     return meshes[name];

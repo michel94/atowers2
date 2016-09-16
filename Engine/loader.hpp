@@ -14,6 +14,7 @@ class Loader{
 public:
 	static int loadPng(string);
 	static Model* loadModel(string name);
+  static Model* loadQuad();
 	static Model* loadObj(string path);
 	static Model loadGroup(string group_name);
 

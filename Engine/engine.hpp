@@ -19,8 +19,9 @@ public:
 
   int getColorId();
 
-  void addObject3d(Drawable* obj);
+  bool addObject3d(Drawable* obj);
   void addObject2d(Drawable2d* obj);
+  void addObject2d(Group2d* obj);
   void removeObject3d(Drawable* obj);
   void removeObject2d(Drawable2d* obj);
 
@@ -74,7 +75,7 @@ private:
   Drawable* getCurrentClickable();
   void handleClick3d(mat4 MVP, int windowWidth, int windowHeight);
   void handleClick2d(int windowWidth, int windowHeight);
-  void drawTriangles(Drawable* obj, unsigned int color);
+  inline void drawColored(ShaderData& shader, mat4 MVP, Drawable* obj, unsigned int color);
 
   void openglInit();
   void render2d(float elapsed, int windowWidth, int windowHeight);

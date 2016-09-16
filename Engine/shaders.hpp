@@ -27,10 +27,13 @@ public:
 	}
 
 	GLuint programId;
+  string name;
 private:
 	map<string, int> variableIds;
 
 };
+
+typedef map<string, ShaderData*> ShaderMap;
 
 ShaderData* loadShader(const string basePath);
 ShaderData* loadShader(const string vertex_file_path, const string fragment_file_path);

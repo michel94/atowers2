@@ -8,21 +8,8 @@ void Cube::draw(float elapsed, ShaderData& shader, mat4* MVP){
   Drawable::drawTexturedQuads(elementsVBO, verticesVBO, elements->size(), texture, texCoordsVBO);
 }
 
-vector<Triangle> Cube::getTriangles(){
-  return triangles;
-}
-
-void Cube::addTriangle(vector<GLuint> &index, vector<float> &v, int i) {
-  int idx1 = 3*index[i],
-      idx2 = 3*index[i+1],
-      idx3 = 3*index[i+2],
-      idx4 = 3*index[i+3];
-  auto v1 = vec3(v[idx1], v[idx1+1], v[idx1+2]),
-       v2 = vec3(v[idx2], v[idx2+1], v[idx2+2]),
-       v3 = vec3(v[idx3], v[idx3+1], v[idx3+2]),
-       v4 = vec3(v[idx4], v[idx4+1], v[idx4+2]);
-  this->triangles.push_back(Triangle(v1, v2, v3));
-  this->triangles.push_back(Triangle(v1, v3, v4));
+void Cube::pureDraw(ShaderData& shader, mat4* MVP){
+  draw(0, shader, MVP);
 }
 
 Cube::Cube(int texture, vec3 pos){
@@ -38,7 +25,4 @@ Cube::Cube(int texture, vec3 pos){
   vertices  = &model->vertices;
   texCoords = &model->texCoords;
 
-  for(int i=0; i<(signed)elements->size(); i+=4){
-    addTriangle(*elements, *vertices, i);
-  }
 }

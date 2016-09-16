@@ -84,6 +84,7 @@ ShaderData* loadShader(const string vertex_file_path, const string fragment_file
 	for (int i = 0; i < count; i++){
 		glGetActiveAttrib(ProgramID, (GLuint) i, bufSize, &length, &size, &type, name);
 		shaderData->setVariable(name, glGetAttribLocation(ProgramID, name));
+    cout << name << endl;
 	}
 
 	glGetProgramiv(ProgramID, GL_ACTIVE_UNIFORMS, &count);
@@ -91,6 +92,7 @@ ShaderData* loadShader(const string vertex_file_path, const string fragment_file
 	for (int i = 0; i < count; i++){
 		glGetActiveUniform(ProgramID, (GLuint)i, bufSize, &length, &size, &type, name);
 		shaderData->setVariable(name, glGetUniformLocation(ProgramID, name));
+    cout << name << endl;
 	}
 	shaderData->programId = ProgramID;
 	

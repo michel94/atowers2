@@ -56,10 +56,10 @@ void Game::loadScene(){
     Image* image = new Image(resourceNames[i], vec2(0, 0), sizeIcon);
     Textbox* textbox = new Textbox(vec2(7, -13), 120, "");
 
-    groups[i] = new Group2d(vec3(0, 0, 0), {image, textbox});
-    engine->addObject2d(groups[i]);
+    Group2d* g = new Group2d(vec3(0, 0, 0), {image, textbox});
+    groups[i] = g;
+    engine->addObject2d(g);
     
-    //engine->addObject2d(textbox);
     textboxes[i] = textbox;
 
   }
@@ -106,6 +106,8 @@ void Game::onOver(Drawable* obj){
 void Game::onClick(Drawable* obj, int button, int action, int mods){
   if(cursor){
     if(button == GLFW_MOUSE_BUTTON_RIGHT){
+      if(cursor->over)
+        cursor->over->overred = false;
       engine->removeObject3d(cursor);
       cursor = NULL;
     }else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
@@ -117,11 +119,15 @@ void Game::onClick(Drawable* obj, int button, int action, int mods){
         string name = ((Building*)cursor)->getName();
         Building* building = BuildingFactory::newByName(name, vec3(pos.x, pos.y, 0));
         building->setAngle(cursor->getAngle());
-        engine->addObject3d(building);
+        if(!engine->addObject3d(building)){
+          delete building;
+          cursor->pressing = false;
+          return;
+        }
 
         myResources.update(myResources - building->getCost());
-        cursor->pressing = false;
       }
+      cursor->pressing = false;
     }
 
   }

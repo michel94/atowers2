@@ -4,11 +4,11 @@
 GridLayout::GridLayout(vec2 pos, vec2 size, float width, map<string, string> properties) : Quad(pos) {
   this->elementSize = size;
   this->width = width;
-  if(contains(properties, string("padding")) )
+  if(hasKey(properties, string("padding")) )
     this->padding = stoi(properties["padding"]);
-  if(contains(properties, string("margin")) )
+  if(hasKey(properties, string("margin")) )
     this->margin = stoi(properties["margin"]);
-  if(contains(properties, string("align")) ){
+  if(hasKey(properties, string("align")) ){
     if(properties["align"] == "left")
       this->align = LEFT;
     else if(properties["align"] == "center")

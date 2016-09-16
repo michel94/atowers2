@@ -1,7 +1,7 @@
 #include "Engine/quad.hpp"
 
 template<class K, class V>
-inline bool contains(map<K, V> &m, K k){
+inline bool hasKey(map<K, V> &m, K k){
 	return m.find(k) != m.end();
 }
 

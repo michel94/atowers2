@@ -20,6 +20,7 @@ public:
     }
     Object::draw(elapsed, shader, MVP);
   }
+
   virtual Resources getCost(){
   	return cost;
   }

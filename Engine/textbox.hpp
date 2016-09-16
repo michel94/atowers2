@@ -11,7 +11,7 @@ public:
 	~Textbox();
 
 	void draw(float elapsed, ShaderData& shader, mat4* MVP);
-	void setText(string t);
+  void setText(string t);
 private:
 	string text;
 	FT_Face face;
@@ -25,4 +25,6 @@ private:
 		}
 		return &ft;
 	}
+
+  vector<GLuint> textures;
 };

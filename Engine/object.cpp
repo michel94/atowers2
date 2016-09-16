@@ -22,18 +22,17 @@ Object::Object(string name, vec3 pos){
 }
 
 void Object::draw(float elapsed, ShaderData& shader, mat4* MVP){
+  Object::pureDraw(shader, MVP);
+}
+
+void Object::pureDraw(ShaderData& shader, mat4* MVP){
   mat4 centerT = translate(mat4(), vec3(-0.5, -0.5, 0));
   mat4 rot = rotate(mat4(), angle, vec3(0,0,1));
   mat4 decenterT = translate(mat4(), vec3(0.5, 0.5, 0));
   mat4 tr = translate(mat4(), pos);
   mat4 localMVP = *MVP * tr * decenterT * rot * centerT;
   glUniformMatrix4fv(shader["MVP"], 1, GL_FALSE, &localMVP[0][0]);
-  glColor4f(1.0, 0.0, 0.0, 1.0);
   Drawable::drawTexturedTriangles(elementsVBO, verticesVBO, elements->size(), texture, texCoordsVBO);
-}
-
-vector<Triangle> Object::getTriangles(){
-  return triangles;
 }
 
 void Object::addTriangle(vector<GLuint> &index, vector<float> &v, int i) {
